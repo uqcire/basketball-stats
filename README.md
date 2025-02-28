@@ -1,4 +1,4 @@
-# Project Development Environment – Daisy UI
+# Basketball Stats App
 
 Welcome to the **Project Development Environment – Daisy UI** repository. This project is designed to provide a streamlined development environment utilizing Vue.js, Vite, and DaisyUI, among other tools and libraries.
 
