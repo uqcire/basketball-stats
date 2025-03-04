@@ -1,5 +1,5 @@
 import { setupRouter } from '@/router'
-import { setupStore } from '@/store'
+import { setupStore } from '@/stores'
 import '@/styles/global.css'
 import { createApp } from 'vue'
 import App from '/App.vue'
