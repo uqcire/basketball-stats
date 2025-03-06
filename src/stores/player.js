@@ -1,3 +1,4 @@
+import { supabase } from '@/lib/supabase'
 import { defineStore } from 'pinia'
 
 export const usePlayerStore = defineStore('player', {
@@ -7,36 +8,65 @@ export const usePlayerStore = defineStore('player', {
 
   actions: {
     async fetchPlayers() {
-      // 模拟从后端获取数据
-      // 实际项目中这里应该是一个 API 调用
-      this.players = [
-        {
-          id: 1,
-          name: '张三',
-          number: '23',
-          position: 'SF',
-          height: '198cm',
-          weight: '88kg',
-          birthdate: '2000-01-01',
-          stats: []
-        }
-      ]
-    },
+      try {
+        const { data, error } = await supabase
+          .from('players')
+          .select('*')
+          .order('name')
 
-    addPlayer(playerData) {
-      const newPlayer = {
-        id: Date.now(),
-        stats: [],
-        ...playerData
+        if (error) throw error
+        this.players = data || []
+      } catch (error) {
+        console.error('Error fetching players:', error)
       }
-      this.players.push(newPlayer)
-      return newPlayer.id
     },
 
-    updatePlayer(playerId, playerData) {
-      const index = this.players.findIndex(p => p.id === playerId)
-      if (index !== -1) {
-        this.players[index] = { ...this.players[index], ...playerData }
+    async addPlayer(playerData) {
+      try {
+        const { data, error } = await supabase
+          .from('players')
+          .insert([{
+            name: playerData.name,
+            number: playerData.number,
+            position: playerData.position,
+            height: playerData.height,
+            weight: playerData.weight
+          }])
+          .select()
+          .single()
+
+        if (error) throw error
+        this.players.push(data)
+        return data.id
+      } catch (error) {
+        console.error('Error adding player:', error)
+        throw error
+      }
+    },
+
+    async updatePlayer(playerId, playerData) {
+      try {
+        const { data, error } = await supabase
+          .from('players')
+          .update({
+            name: playerData.name,
+            number: playerData.number,
+            position: playerData.position,
+            height: playerData.height,
+            weight: playerData.weight
+          })
+          .eq('id', playerId)
+          .select()
+          .single()
+
+        if (error) throw error
+        const index = this.players.findIndex(p => p.id === playerId)
+        if (index !== -1) {
+          this.players[index] = data
+        }
+      } catch (error) {
+        console.error('Error updating player:', error)
+        throw error
       }
     },
 
@@ -54,6 +84,14 @@ export const usePlayerStore = defineStore('player', {
   },
 
   getters: {
+    getPlayerById: (state) => (id) => {
+      return state.players.find(player => player.id === id)
+    },
+
+    getAllPlayers: (state) => {
+      return state.players
+    },
+
     // 获取球员所有比赛数据
     getPlayerStats: (state) => (playerId) => {
       const player = state.players.find(p => p.id === playerId)

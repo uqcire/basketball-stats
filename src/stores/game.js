@@ -1,3 +1,4 @@
+import { supabase } from '@/lib/supabase'
 import { defineStore } from 'pinia'
 
 export const useGameStore = defineStore('game', {
@@ -7,79 +8,70 @@ export const useGameStore = defineStore('game', {
 
   actions: {
     async fetchGames() {
-      // 模拟从后端获取数据
-      // 实际项目中这里应该是一个 API 调用
-      this.games = [
-        {
-          id: 1,
-          name: '测试比赛 1',
-          date: '2024-03-20',
-          teamStats: {
-            PTS: 89,
-            FGM: 32,
-            FGA: 70,
-            threePM: 8,
-            threePA: 22,
-            FTM: 17,
-            FTA: 25,
-            OREB: 12,
-            DREB: 28,
-            AST: 15,
-            STL: 8,
-            BLK: 4,
-            TOV: 13
-          },
-          playerStats: []
-        },
-        {
-          id: 2,
-          name: '测试比赛 2',
-          date: '2024-03-22',
-          teamStats: {
-            PTS: 95,
-            FGM: 35,
-            FGA: 75,
-            threePM: 10,
-            threePA: 26,
-            FTM: 15,
-            FTA: 20,
-            OREB: 10,
-            DREB: 30,
-            AST: 18,
-            STL: 6,
-            BLK: 5,
-            TOV: 11
-          },
-          playerStats: []
+      try {
+        const { data, error } = await supabase
+          .from('games')
+          .select('*')
+          .order('date', { ascending: false })
+
+        if (error) throw error
+        this.games = data || []
+      } catch (error) {
+        console.error('Error fetching games:', error)
+      }
+    },
+
+    async addGame(gameData) {
+      try {
+        const { data, error } = await supabase
+          .from('games')
+          .insert([{
+            name: gameData.name,
+            date: gameData.date,
+            team_stats: gameData.teamStats,
+            player_stats: gameData.playerStats || []
+          }])
+          .select()
+          .single()
+
+        if (error) throw error
+        this.games.unshift(data)
+        return data.id
+      } catch (error) {
+        console.error('Error adding game:', error)
+        throw error
+      }
+    },
+
+    async updateGame(gameId, gameData) {
+      try {
+        const { data, error } = await supabase
+          .from('games')
+          .update({
+            name: gameData.name,
+            date: gameData.date,
+            team_stats: gameData.teamStats,
+            player_stats: gameData.playerStats
+          })
+          .eq('id', gameId)
+          .select()
+          .single()
+
+        if (error) throw error
+        const index = this.games.findIndex(g => g.id === gameId)
+        if (index !== -1) {
+          this.games[index] = data
         }
-      ]
-    },
-
-    addGame(gameData) {
-      const newGame = {
-        id: Date.now(),
-        teamStats: {},
-        playerStats: [],
-        ...gameData
-      }
-      this.games.push(newGame)
-      return newGame.id
-    },
-
-    updateGame(gameId, gameData) {
-      const index = this.games.findIndex(g => g.id === gameId)
-      if (index !== -1) {
-        this.games[index] = { ...this.games[index], ...gameData }
+      } catch (error) {
+        console.error('Error updating game:', error)
+        throw error
       }
     },
 
-    updateGameStats(gameId, playerStats) {
-      const game = this.games.find(g => g.id === gameId)
-      if (game) {
-        game.playerStats = playerStats
-
+    async updateGameStats(gameId, playerStats) {
+      try {
         // 计算球队统计数据
-        game.teamStats = playerStats.reduce((team, player) => {
+        const teamStats = playerStats.reduce((team, player) => {
           Object.keys(player).forEach(key => {
             if (typeof player[key] === 'number') {
               team[key] = (team[key] || 0) + player[key]
@@ -87,6 +79,25 @@ export const useGameStore = defineStore('game', {
           })
           return team
         }, {})
+
+        const { data, error } = await supabase
+          .from('games')
+          .update({
+            team_stats: teamStats,
+            player_stats: playerStats
+          })
+          .eq('id', gameId)
+          .select()
+          .single()
+
+        if (error) throw error
+        const index = this.games.findIndex(g => g.id === gameId)
+        if (index !== -1) {
+          this.games[index] = data
+        }
+      } catch (error) {
+        console.error('Error updating game stats:', error)
+        throw error
       }
     }
   },
@@ -99,8 +110,8 @@ export const useGameStore = defineStore('game', {
     getGameStats: (state) => (id) => {
       const game = state.games.find(game => game.id === id)
       return game ? {
-        teamStats: game.teamStats,
-        playerStats: game.playerStats
+        teamStats: game.team_stats,
+        playerStats: game.player_stats
       } : null
     }
   }
