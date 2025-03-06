@@ -1,11 +1,24 @@
 <script setup>
-defineProps({
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const props = defineProps({
   stats: {
     type: Array,
-    required: true,
-    default: () => []
+    required: true
+  },
+  editingGameId: {
+    type: [Number, String],
+    default: null
+  },
+  editingGameName: {
+    type: String,
+    default: ''
   }
 })
+
+const emit = defineEmits(['start-edit', 'save-edit', 'cancel-edit', 'update:editingGameName'])
 
 const headers = [
   'GAME', 'GR', 'GT', 'PTS', 'FGM', 'FGA', 'FG%',
@@ -25,40 +38,118 @@ const calculatePercentage = (made, attempted) => {
 const calculateREB = (record) => {
   return (record.OREB || 0) + (record.DREB || 0)
 }
+
+const handleInput = (event) => {
+  emit('update:editingGameName', event.target.value)
+}
+
+const goToGameDetail = (gameId) => {
+  if (props.editingGameId === gameId) return
+  router.push(`/game/${gameId}`)
+}
 </script>
 
 <template>
-  <table class="min-w-full table-auto border-collapse">
-    <thead>
-      <tr class="bg-gray-100">
-        <th v-for="header in headers" :key="header" class="border p-2 text-center font-semibold">
-          {{ header }}
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          比赛
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          比赛结果
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          比赛类型
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          得分
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          投篮
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          三分
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          罚球
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          篮板
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          助攻
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          抢断
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          盖帽
         </th>
       </tr>
     </thead>
-    <tbody>
-      <tr v-for="(record, index) in stats" :key="index" class="hover:bg-gray-50">
-        <td class="border p-2 text-center">{{ record.GAME }}</td>
-        <td class="border p-2 text-center">{{ record.GR }}</td>
-        <td class="border p-2 text-center">{{ record.GT }}</td>
-        <td class="border p-2 text-center font-semibold">{{ calculatePTS(record) }}</td>
-        <td class="border p-2 text-center">{{ record.FGM }}</td>
-        <td class="border p-2 text-center">{{ record.FGA }}</td>
-        <td class="border p-2 text-center">{{ calculatePercentage(record.FGM, record.FGA) }}</td>
-        <td class="border p-2 text-center">{{ record.threePM }}</td>
-        <td class="border p-2 text-center">{{ record.threePA }}</td>
-        <td class="border p-2 text-center">{{ calculatePercentage(record.threePM, record.threePA) }}</td>
-        <td class="border p-2 text-center">{{ record.FTM }}</td>
-        <td class="border p-2 text-center">{{ record.FTA }}</td>
-        <td class="border p-2 text-center">{{ calculatePercentage(record.FTM, record.FTA) }}</td>
-        <td class="border p-2 text-center">{{ record.OREB }}</td>
-        <td class="border p-2 text-center">{{ record.DREB }}</td>
-        <td class="border p-2 text-center font-semibold">{{ calculateREB(record) }}</td>
-        <td class="border p-2 text-center">{{ record.AST }}</td>
-        <td class="border p-2 text-center">{{ record.TOV }}</td>
-        <td class="border p-2 text-center">{{ record.STL }}</td>
-        <td class="border p-2 text-center">{{ record.BLK }}</td>
-        <td class="border p-2 text-center">{{ record.PF }}</td>
+    <tbody class="bg-white divide-y divide-gray-200">
+      <tr v-for="stat in stats" :key="stat.id" class="hover:bg-gray-50 cursor-pointer" @click="goToGameDetail(stat.id)">
+        <td class="px-6 py-4 whitespace-nowrap">
+          <div v-if="editingGameId === stat.id" class="flex items-center space-x-2" @click.stop>
+            <input type="text" :value="editingGameName" @input="handleInput" class="border rounded px-2 py-1 text-sm"
+              @keyup.enter="emit('save-edit')" @keyup.esc="emit('cancel-edit')">
+            <button @click="emit('save-edit')" class="text-green-600 hover:text-green-800">
+              <span class="text-sm">✓</span>
+            </button>
+            <button @click="emit('cancel-edit')" class="text-red-600 hover:text-red-800">
+              <span class="text-sm">✕</span>
+            </button>
+          </div>
+          <div v-else class="flex items-center space-x-2">
+            <span>{{ stat.name }}</span>
+            <button @click.stop="emit('start-edit', stat)" class="text-gray-400 hover:text-gray-600">
+              <span class="text-sm">✎</span>
+            </button>
+          </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ stat.GR }}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ stat.GT }}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ calculatePTS(stat) }}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ stat.FGM }}/{{ stat.FGA }}
+          <span class="text-gray-500 text-sm">
+            ({{ calculatePercentage(stat.FGM, stat.FGA) }})
+          </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ stat.threePM }}/{{ stat.threePA }}
+          <span class="text-gray-500 text-sm">
+            ({{ calculatePercentage(stat.threePM, stat.threePA) }})
+          </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ stat.FTM }}/{{ stat.FTA }}
+          <span class="text-gray-500 text-sm">
+            ({{ calculatePercentage(stat.FTM, stat.FTA) }})
+          </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ calculateREB(stat) }}
+          <span class="text-gray-500 text-sm">
+            ({{ stat.OREB }}/{{ stat.DREB }})
+          </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ stat.AST }}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ stat.STL }}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ stat.BLK }}
+        </td>
       </tr>
     </tbody>
   </table>

@@ -1,108 +1,84 @@
 <script setup>
 import TeamStatsTable from '@/components/TeamStatsTable.vue';
-import { usePlayersStore } from '@/stores/players';
-import { computed, onMounted } from 'vue';
+import { usePlayerStore } from '@/stores/player';
+import { useTeamStore } from '@/stores/team';
+import { useGameStore } from '@/stores/game';
+import { computed, onMounted, ref } from 'vue';
 
-const store = usePlayersStore()
+const playerStore = usePlayerStore()
+const teamStore = useTeamStore()
+const gameStore = useGameStore()
+
+const editingGameId = ref(null)
+const editingGameName = ref('')
 
 // 确保数据加载
 onMounted(async () => {
-  if (store.players.length === 0) {
-    await store.fetchPlayers()
+  try {
+    await Promise.all([
+      playerStore.fetchPlayers(),
+      gameStore.fetchGames()
+    ])
+  } catch (error) {
+    console.error('加载数据失败:', error)
   }
 })
 
-// 计算每场比赛的团队数据
+// 获取团队比赛数据
 const teamGameStats = computed(() => {
-  const gameMap = new Map() // 用于存储每场比赛的数据
-
-  // 遍历所有球员的比赛数据
-  store.players.forEach(player => {
-    player.stats.forEach((stat, index) => {
-      const gameKey = stat.GAME || \`Game \${index + 1}\`
-      if (!gameMap.has(gameKey)) {
-        // 初始化该场比赛的数据
-        gameMap.set(gameKey, {
-          GAME: gameKey,
-          GR: stat.GR || '-',
-          GT: stat.GT || '-',
-          MIN: 0,
-          FGM: 0,
-          FGA: 0,
-          threePM: 0,
-          threePA: 0,
-          FTM: 0,
-          FTA: 0,
-          OREB: 0,
-          DREB: 0,
-          AST: 0,
-          TOV: 0,
-          STL: 0,
-          BLK: 0,
-          PF: 0,
-          playerCount: 0 // 记录参与该场比赛的球员数
-        })
-      }
-
-      // 累加该场比赛的数据
-      const gameStats = gameMap.get(gameKey)
-      Object.keys(stat).forEach(key => {
-        if (key !== 'GAME' && key !== 'GR' && key !== 'GT') {
-          gameStats[key] = (gameStats[key] || 0) + (stat[key] || 0)
-        }
-      })
-      gameStats.playerCount++
-    })
-  })
-
-  return Array.from(gameMap.values())
+  return gameStore.games.map(game => ({
+    id: game.id,
+    name: game.name,
+    date: game.date,
+    GR: game.GR || '-',
+    GT: game.GT || '-',
+    ...game.teamStats
+  }))
 })
 
-// 计算团队平均数据
+// 获取团队平均数据
 const teamAverageStats = computed(() => {
-  if (teamGameStats.value.length === 0) return null
+  const games = teamGameStats.value
+  if (!games.length) return null
 
-  const totalGames = teamGameStats.value.length
-  const averageStats = {
-    gamesPlayed: totalGames,
-    MIN: 0,
-    FGM: 0,
-    FGA: 0,
-    threePM: 0,
-    threePA: 0,
-    FTM: 0,
-    FTA: 0,
-    OREB: 0,
-    DREB: 0,
-    AST: 0,
-    TOV: 0,
-    STL: 0,
-    BLK: 0,
-    PF: 0,
-    PTS: 0
-  }
-
-  // 计算总和
-  teamGameStats.value.forEach(game => {
-    Object.keys(averageStats).forEach(key => {
-      if (key !== 'gamesPlayed' && game[key]) {
-        averageStats[key] += game[key]
+  const totalGames = games.length
+  const totals = games.reduce((acc, game) => {
+    Object.keys(game).forEach(key => {
+      if (typeof game[key] === 'number') {
+        acc[key] = (acc[key] || 0) + game[key]
       }
     })
-  })
+    return acc
+  }, {})
 
-  // 计算平均值
-  Object.keys(averageStats).forEach(key => {
-    if (key !== 'gamesPlayed') {
-      averageStats[key] = Number((averageStats[key] / totalGames).toFixed(1))
-    }
-  })
-
-  // 计算场均得分
-  averageStats.PTS = (averageStats.FGM * 2) + (averageStats.threePM * 3) + averageStats.FTM
-
-  return averageStats
+  return Object.keys(totals).reduce((acc, key) => {
+    acc[key] = totals[key] / totalGames
+    return acc
+  }, {})
 })
+
+// 开始编辑比赛名称
+const startEditGameName = (game) => {
+  editingGameId.value = game.id
+  editingGameName.value = game.name
+}
+
+// 保存比赛名称
+const saveGameName = () => {
+  if (editingGameId.value && editingGameName.value.trim()) {
+    gameStore.updateGame(editingGameId.value, {
+      name: editingGameName.value.trim()
+    })
+    editingGameId.value = null
+    editingGameName.value = ''
+  }
+}
+
+// 取消编辑
+const cancelEdit = () => {
+  editingGameId.value = null
+  editingGameName.value = ''
+}
 
 // 计算命中率
 const calculatePercentage = (made, attempted) => {
@@ -112,7 +88,7 @@ const calculatePercentage = (made, attempted) => {
 </script>
 
 <template>
-  <div class="container mx-auto p-4">
+  <div class="container mx-auto">
     <div class="flex flex-col gap-6">
       <!-- 标题 -->
       <div>
@@ -126,7 +102,7 @@ const calculatePercentage = (made, attempted) => {
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="stat-card">
             <div class="text-gray-600">场均得分</div>
-            <div class="text-2xl font-bold">{{ teamAverageStats.PTS.toFixed(1) }}</div>
+            <div class="text-2xl font-bold">{{ teamAverageStats.PTS?.toFixed(1) || '0.0' }}</div>
           </div>
           <div class="stat-card">
             <div class="text-gray-600">投篮命中率</div>
@@ -149,20 +125,20 @@ const calculatePercentage = (made, attempted) => {
           <div class="stat-card">
             <div class="text-gray-600">场均篮板</div>
             <div class="text-2xl font-bold">
-              {{ (teamAverageStats.OREB + teamAverageStats.DREB).toFixed(1) }}
+              {{ ((teamAverageStats.OREB || 0) + (teamAverageStats.DREB || 0)).toFixed(1) }}
             </div>
           </div>
           <div class="stat-card">
             <div class="text-gray-600">场均助攻</div>
-            <div class="text-2xl font-bold">{{ teamAverageStats.AST.toFixed(1) }}</div>
+            <div class="text-2xl font-bold">{{ teamAverageStats.AST?.toFixed(1) || '0.0' }}</div>
           </div>
           <div class="stat-card">
             <div class="text-gray-600">场均抢断</div>
-            <div class="text-2xl font-bold">{{ teamAverageStats.STL.toFixed(1) }}</div>
+            <div class="text-2xl font-bold">{{ teamAverageStats.STL?.toFixed(1) || '0.0' }}</div>
           </div>
           <div class="stat-card">
             <div class="text-gray-600">场均盖帽</div>
-            <div class="text-2xl font-bold">{{ teamAverageStats.BLK.toFixed(1) }}</div>
+            <div class="text-2xl font-bold">{{ teamAverageStats.BLK?.toFixed(1) || '0.0' }}</div>
           </div>
         </div>
       </div>
@@ -171,15 +147,11 @@ const calculatePercentage = (made, attempted) => {
       <div class="bg-white rounded-lg shadow overflow-hidden">
         <h2 class="text-xl font-semibold p-4 border-b">比赛详细数据</h2>
         <div class="overflow-x-auto">
-          <TeamStatsTable :stats="teamGameStats" />
+          <TeamStatsTable :stats="teamGameStats" :editing-game-id="editingGameId" :editing-game-name="editingGameName"
+            @start-edit="startEditGameName" @save-edit="saveGameName" @cancel-edit="cancelEdit"
+            @update:editing-game-name="editingGameName = $event" />
         </div>
       </div>
     </div>
   </div>
 </template>
-
-<style scoped>
-.stat-card {
-  @apply p-4 bg-gray-50 rounded-lg;
-}
-</style>

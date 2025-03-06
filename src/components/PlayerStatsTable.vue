@@ -1,6 +1,4 @@
 <script setup>
-import { usePlayersStore } from '@/stores/players'
-
 defineProps({
   stats: {
     type: Array,

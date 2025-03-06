@@ -1,58 +1,65 @@
 <script setup>
 import PlayerStatsTable from '@/components/PlayerStatsTable.vue';
 import RecordForm from '@/components/RecordForm.vue';
-import { usePlayersStore } from '@/stores/players';
-import { computed, onMounted, ref, watch } from 'vue';
+import { usePlayerStore } from '@/stores/player';
+import { useGameStore } from '@/stores/game';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute()
 const router = useRouter()
-const store = usePlayersStore()
+const playerStore = usePlayerStore()
+const gameStore = useGameStore()
 const showAddRecord = ref(false)
 
-// 获取当前球员数据（增加空值保护）
-const player = computed(() => {
-  const currentPlayer = store.players.find(p => p.id === Number(route.params.id))
-  if (!currentPlayer) {
-    router.push('/players?error=player_not_found')
-    return null
-  }
-  return currentPlayer
-})
+const playerId = computed(() => Number(route.params.id))
+const player = computed(() => playerStore.players.find(p => p.id === playerId.value))
+const playerStats = computed(() => playerStore.getPlayerStats(playerId.value))
+const playerAverageStats = computed(() => playerStore.getPlayerAverageStats(playerId.value))
 
 // 确保数据加载
 onMounted(async () => {
-  if (store.players.length === 0) {
-    await store.fetchPlayers()
+  if (playerStore.players.length === 0) {
+    await playerStore.fetchPlayers()
+  }
+  if (gameStore.games.length === 0) {
+    await gameStore.fetchGames()
   }
 })
 
-// 计算平均数据（增加类型安全）
-const averageStats = computed(() => {
-  if (!player.value || !player.value.stats.length) return {
-    PTS: 0,
-    FGM: 0,
-    FGA: 0,
-    threePM: 0,
-    threePA: 0,
-    FTM: 0,
-    FTA: 0
-  }
-  const stats = store.averageStats(Number(route.params.id))
-  return {
-    ...stats,
-    PTS: ((stats.FGM || 0) * 2) + ((stats.threePM || 0) * 3) + (stats.FTM || 0)
-  }
-})
+// 计算命中率
+const calculatePercentage = (made, attempted) => {
+  if (!attempted) return 'N/A'
+  return ((made / attempted) * 100).toFixed(1) + '%'
+}
+
+// 计算得分
+const calculatePoints = (stat) => {
+  return (stat.FGM * 2) + (stat.threePM * 3) + stat.FTM
+}
+
+// 返回球员列表
+const goBack = () => {
+  router.push('/players')
+}
 
 // 处理添加记录
 const handleAddRecord = (record) => {
   if (player.value) {
-    store.addGameRecord(player.value.id, {
+    // 创建新比赛
+    const gameId = gameStore.addGame({
+      name: `Game ${gameStore.games.length + 1}`,
+      date: new Date().toISOString().split('T')[0],
+      playerStats: []
+    })
+
+    // 更新球员数据
+    playerStore.updatePlayerStats(player.value.id, gameId, {
       ...record,
       // 自动计算PTS
       PTS: (record.FGM * 2) + (record.threePM * 3) + record.FTM
     })
+
     showAddRecord.value = false
   }
 }
@@ -81,20 +88,16 @@ const handleAddRecord = (record) => {
         <div class="space-y-2">
           <div class="flex justify-between">
             <span>比赛场次:</span>
-            <span class="font-bold">{{ player.stats.length }}</span>
+            <span class="font-bold">{{ playerStats.length }}</span>
           </div>
           <div class="flex justify-between">
             <span>场均得分:</span>
-            <span class="font-bold">{{ averageStats.PTS?.toFixed(1) || '0.0' }}</span>
+            <span class="font-bold">{{ playerAverageStats?.PTS?.toFixed(1) || '0.0' }}</span>
           </div>
           <div class="flex justify-between">
             <span>命中率:</span>
             <span class="font-bold">
-              {{
-                averageStats.FGA > 0
-                  ? ((averageStats.FGM / averageStats.FGA) * 100).toFixed(1) + '%'
-                  : 'N/A'
-              }}
+              {{ calculatePercentage(playerAverageStats?.FGM, playerAverageStats?.FGA) }}
             </span>
           </div>
         </div>
@@ -103,7 +106,7 @@ const handleAddRecord = (record) => {
       <!-- 详细数据表格 -->
       <div class="p-4 border rounded bg-white shadow">
         <h3 class="text-lg font-semibold mb-4">比赛记录详情</h3>
-        <PlayerStatsTable :stats="player.stats" class="max-h-[500px] overflow-auto" />
+        <PlayerStatsTable :stats="playerStats" class="max-h-[500px] overflow-auto" />
       </div>
     </div>
 

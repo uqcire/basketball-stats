@@ -11,9 +11,6 @@
           <button class="btn btn-ghost text-xl">
             <RouterLink to="/players">Players</RouterLink>
           </button>
-          <button class="btn btn-ghost text-xl">
-            <RouterLink to="/team">Team</RouterLink>
-          </button>
         </div>
       </header>
       <main>

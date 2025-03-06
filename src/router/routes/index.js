@@ -1,14 +1,23 @@
-import { usePlayersStore } from '@/stores/players'
+import { usePlayerStore } from '@/stores/player'
 
 export const Routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('@/views/HomeView.vue'),
+    component: () => import('@/views/TeamStats.vue'),
     meta: {
       title: 'Homepage',
-    },
-
+    }
+  },
+  {
+    path: '/game/:id',
+    name: 'GameDetail',
+    component: () => import('@/views/GameDetail.vue'),
+    props: true,
+    meta: {
+      title: 'Game Detail',
+      layout: 'AppLayout'
+    }
   },
   {
     path: '/players',
@@ -17,8 +26,7 @@ export const Routes = [
     meta: {
       title: 'Player Stats',
       layout: 'AppLayout'
-    },
-
+    }
   },
   {
     path: '/players/:id',
@@ -26,7 +34,7 @@ export const Routes = [
     component: () => import('@/views/PlayerDetail.vue'),
     props: true,
     beforeEnter: async (to, from, next) => {
-      const store = usePlayersStore()
+      const store = usePlayerStore()
       // 确保数据已加载
       if (store.players.length === 0) {
         await store.fetchPlayers()
@@ -37,17 +45,6 @@ export const Routes = [
     meta: {
       title: 'Player Detail',
       layout: 'AppLayout'
-    },
-
-  },
-  {
-    path: '/team',
-    name: 'TeamStats',
-    component: () => import('@/views/TeamStats.vue'),
-    meta: {
-      title: 'Team Stats',
-      layout: 'AppLayout'
-    },
-
-  },
+    }
+  }
 ]
