@@ -114,8 +114,8 @@ const goToGameDetail = (gameId) => {
         <td class="px-6 py-4 whitespace-nowrap">
           {{ stat.GT }}
         </td>
-        <td class="px-6 py-4 whitespace-nowrap">
-          {{ calculatePTS(stat) }}
+        <td class="px-6 py-4 whitespace-nowrap font-semibold">
+          {{ stat.PTS }}
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
           {{ stat.FGM }}/{{ stat.FGA }}
@@ -136,7 +136,7 @@ const goToGameDetail = (gameId) => {
           </span>
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
-          {{ calculateREB(stat) }}
+          {{ stat.OREB + stat.DREB }}
           <span class="text-gray-500 text-sm">
             ({{ stat.OREB }}/{{ stat.DREB }})
           </span>

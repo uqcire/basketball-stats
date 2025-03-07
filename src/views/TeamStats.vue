@@ -1,16 +1,35 @@
 <script setup>
 import TeamStatsTable from '@/components/TeamStatsTable.vue';
+import { useGameStore } from '@/stores/game';
 import { usePlayerStore } from '@/stores/player';
 import { useTeamStore } from '@/stores/team';
-import { useGameStore } from '@/stores/game';
 import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 const playerStore = usePlayerStore()
 const teamStore = useTeamStore()
 const gameStore = useGameStore()
+const router = useRouter()
 
 const editingGameId = ref(null)
 const editingGameName = ref('')
+
+// 添加新比赛
+const addNewGame = async () => {
+  try {
+    const gameData = {
+      name: `比赛 ${gameStore.games.length + 1}`,
+      date: new Date().toISOString().split('T')[0],
+      team_stats: {},
+      player_stats: []
+    }
+    const gameId = await gameStore.addGame(gameData)
+    router.push(`/game/${gameId}`)
+  } catch (error) {
+    console.error('Error creating new game:', error)
+    alert('创建新比赛失败，请重试')
+  }
+}
 
 // 确保数据加载
 onMounted(async () => {
@@ -26,14 +45,61 @@ onMounted(async () => {
 
 // 获取团队比赛数据
 const teamGameStats = computed(() => {
-  return gameStore.games.map(game => ({
-    id: game.id,
-    name: game.name,
-    date: game.date,
-    GR: game.GR || '-',
-    GT: game.GT || '-',
-    ...game.teamStats
-  }))
+  return gameStore.games.map(game => {
+    // 解构响应式对象
+    const rawGame = {
+      id: game.id,
+      name: game.name,
+      date: game.date,
+      team_stats: game.team_stats ? { ...game.team_stats } : {},
+      player_stats: game.player_stats ? [...game.player_stats] : []
+    }
+
+    console.log('Processing game raw data:', rawGame)
+
+    let stats = rawGame.team_stats
+    const playerStats = rawGame.player_stats
+
+    // 如果team_stats为空，从player_stats计算
+    if (Object.keys(stats).length === 0 && playerStats.length > 0) {
+      stats = playerStats.reduce((acc, player) => {
+        ['MIN', 'FGM', 'FGA', 'threePM', 'threePA', 'FTM', 'FTA',
+          'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK', 'PF'].forEach(key => {
+            acc[key] = (acc[key] || 0) + (Number(player[key]) || 0)
+          })
+        return acc
+      }, {})
+      stats.GR = '-'
+      stats.GT = '-'
+    }
+
+    // 计算得分
+    const pts = ((Number(stats.FGM) || 0) * 2) +
+      ((Number(stats.threePM) || 0) * 3) +
+      (Number(stats.FTM) || 0)
+
+    return {
+      id: rawGame.id,
+      name: rawGame.name,
+      date: rawGame.date,
+      GR: stats.GR || '-',
+      GT: stats.GT || '-',
+      FGM: Number(stats.FGM) || 0,
+      FGA: Number(stats.FGA) || 0,
+      threePM: Number(stats.threePM) || 0,
+      threePA: Number(stats.threePA) || 0,
+      FTM: Number(stats.FTM) || 0,
+      FTA: Number(stats.FTA) || 0,
+      OREB: Number(stats.OREB) || 0,
+      DREB: Number(stats.DREB) || 0,
+      AST: Number(stats.AST) || 0,
+      STL: Number(stats.STL) || 0,
+      BLK: Number(stats.BLK) || 0,
+      TOV: Number(stats.TOV) || 0,
+      PF: Number(stats.PF) || 0,
+      PTS: pts
+    }
+  })
 })
 
 // 获取团队平均数据
@@ -51,10 +117,13 @@ const teamAverageStats = computed(() => {
     return acc
   }, {})
 
-  return Object.keys(totals).reduce((acc, key) => {
-    acc[key] = totals[key] / totalGames
-    return acc
-  }, {})
+  const averages = {}
+  Object.keys(totals).forEach(key => {
+    if (key === 'id') return // 跳过id字段
+    averages[key] = totals[key] / totalGames
+  })
+
+  return averages
 })
 
 // 开始编辑比赛名称
@@ -90,10 +159,15 @@ const calculatePercentage = (made, attempted) => {
 <template>
   <div class="container mx-auto">
     <div class="flex flex-col gap-6">
-      <!-- 标题 -->
-      <div>
-        <h1 class="text-3xl font-bold mb-2">球队数据统计</h1>
-        <p class="text-gray-600">共计 {{ teamGameStats.length }} 场比赛</p>
+      <!-- 标题和添加按钮 -->
+      <div class="flex justify-between items-center">
+        <div>
+          <h1 class="text-3xl font-bold mb-2">球队数据统计</h1>
+          <p class="text-gray-600">共计 {{ teamGameStats.length }} 场比赛</p>
+        </div>
+        <button @click="addNewGame" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+          添加新比赛
+        </button>
       </div>
 
       <!-- 平均数据卡片 -->

@@ -1,6 +1,8 @@
 <script setup>
 import { ref } from 'vue'
 
+const emit = defineEmits(['submit', 'cancel'])
+
 // 表单数据模型
 const formData = ref({
   MIN: '',

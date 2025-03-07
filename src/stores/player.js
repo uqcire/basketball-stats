@@ -30,7 +30,8 @@ export const usePlayerStore = defineStore('player', {
             number: playerData.number,
             position: playerData.position,
             height: playerData.height,
-            weight: playerData.weight
+            weight: playerData.weight,
+            stats: [] // 添加空的统计数据数组
           }])
           .select()
           .single()
@@ -53,7 +54,8 @@ export const usePlayerStore = defineStore('player', {
             number: playerData.number,
             position: playerData.position,
             height: playerData.height,
-            weight: playerData.weight
+            weight: playerData.weight,
+            stats: playerData.stats || [] // 确保 stats 字段存在
           })
           .eq('id', playerId)
           .select()
@@ -70,15 +72,62 @@ export const usePlayerStore = defineStore('player', {
       }
     },
 
-    updatePlayerStats(playerId, gameId, stats) {
-      const player = this.players.find(p => p.id === playerId)
-      if (player) {
-        const gameIndex = player.stats.findIndex(s => s.gameId === gameId)
+    async updatePlayerStats(playerId, gameId, stats) {
+      try {
+        const player = this.players.find(p => p.id === playerId)
+        if (!player) return
+
+        // 确保 stats 是一个数组
+        const playerStats = Array.isArray(player.stats) ? player.stats : []
+        const gameIndex = playerStats.findIndex(s => s.gameId === gameId)
+
         if (gameIndex !== -1) {
-          player.stats[gameIndex] = { ...player.stats[gameIndex], ...stats }
+          playerStats[gameIndex] = { ...playerStats[gameIndex], ...stats }
         } else {
-          player.stats.push({ gameId, ...stats })
+          playerStats.push({ gameId, ...stats })
         }
+
+        // 更新 Supabase
+        const { data, error } = await supabase
+          .from('players')
+          .update({
+            stats: playerStats,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', playerId)
+          .select()
+          .single()
+
+        if (error) throw error
+
+        // 更新本地状态
+        const index = this.players.findIndex(p => p.id === playerId)
+        if (index !== -1) {
+          this.players[index] = data
+        }
+      } catch (error) {
+        console.error('Error updating player stats:', error)
+        throw error
+      }
+    },
+
+    async deletePlayer(playerId) {
+      try {
+        const { error } = await supabase
+          .from('players')
+          .delete()
+          .eq('id', playerId)
+
+        if (error) throw error
+
+        // 从本地状态中移除
+        const index = this.players.findIndex(p => p.id === playerId)
+        if (index !== -1) {
+          this.players.splice(index, 1)
+        }
+      } catch (error) {
+        console.error('Error deleting player:', error)
+        throw error
       }
     }
   },
@@ -95,15 +144,17 @@ export const usePlayerStore = defineStore('player', {
     // 获取球员所有比赛数据
     getPlayerStats: (state) => (playerId) => {
       const player = state.players.find(p => p.id === playerId)
-      return player ? player.stats : []
+      return player?.stats || []
     },
 
     // 计算球员平均数据
     getPlayerAverageStats: (state) => (playerId) => {
       const player = state.players.find(p => p.id === playerId)
-      if (!player || !player.stats.length) return null
+      const stats = player?.stats || []
 
-      const totalGames = player.stats.length
+      if (!stats.length) return null
+
+      const totalGames = stats.length
       const averageStats = {
         gamesPlayed: totalGames,
         MIN: 0,
@@ -123,7 +174,7 @@ export const usePlayerStore = defineStore('player', {
       }
 
       // 计算总和
-      player.stats.forEach(game => {
+      stats.forEach(game => {
         Object.keys(averageStats).forEach(key => {
           if (key !== 'gamesPlayed' && game[key]) {
             averageStats[key] += game[key]

@@ -1,16 +1,12 @@
 <script setup>
 import PlayerStatsTable from '@/components/PlayerStatsTable.vue';
-import RecordForm from '@/components/RecordForm.vue';
 import { usePlayerStore } from '@/stores/player';
-import { useGameStore } from '@/stores/game';
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute()
 const router = useRouter()
 const playerStore = usePlayerStore()
-const gameStore = useGameStore()
-const showAddRecord = ref(false)
 
 const playerId = computed(() => Number(route.params.id))
 const player = computed(() => playerStore.players.find(p => p.id === playerId.value))
@@ -21,9 +17,6 @@ const playerAverageStats = computed(() => playerStore.getPlayerAverageStats(play
 onMounted(async () => {
   if (playerStore.players.length === 0) {
     await playerStore.fetchPlayers()
-  }
-  if (gameStore.games.length === 0) {
-    await gameStore.fetchGames()
   }
 })
 
@@ -43,24 +36,16 @@ const goBack = () => {
   router.push('/players')
 }
 
-// 处理添加记录
-const handleAddRecord = (record) => {
-  if (player.value) {
-    // 创建新比赛
-    const gameId = gameStore.addGame({
-      name: `Game ${gameStore.games.length + 1}`,
-      date: new Date().toISOString().split('T')[0],
-      playerStats: []
-    })
-
-    // 更新球员数据
-    playerStore.updatePlayerStats(player.value.id, gameId, {
-      ...record,
-      // 自动计算PTS
-      PTS: (record.FGM * 2) + (record.threePM * 3) + record.FTM
-    })
-
-    showAddRecord.value = false
+// 删除球员
+const deletePlayer = async () => {
+  if (confirm('确定要删除该球员吗？此操作将同时删除该球员的所有比赛记录，且不可恢复。')) {
+    try {
+      await playerStore.deletePlayer(player.value.id)
+      router.push('/players')
+    } catch (error) {
+      console.error('Error deleting player:', error)
+      alert('删除失败，请重试')
+    }
   }
 }
 </script>
@@ -75,8 +60,8 @@ const handleAddRecord = (record) => {
     <!-- 球员信息头 -->
     <div class="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
       <h1 class="text-2xl font-bold">{{ player.name }}</h1>
-      <button @click="showAddRecord = true" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-        添加比赛记录
+      <button @click="deletePlayer" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+        删除球员
       </button>
     </div>
 
@@ -109,9 +94,6 @@ const handleAddRecord = (record) => {
         <PlayerStatsTable :stats="playerStats" class="max-h-[500px] overflow-auto" />
       </div>
     </div>
-
-    <!-- 添加记录弹窗 -->
-    <RecordForm v-if="showAddRecord" @submit="handleAddRecord" @cancel="showAddRecord = false" />
   </div>
   <div v-else class="p-4">
     <div class="text-center text-gray-500">加载中...</div>

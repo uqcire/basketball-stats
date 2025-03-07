@@ -28,7 +28,7 @@ export const useGameStore = defineStore('game', {
           .insert([{
             name: gameData.name,
             date: gameData.date,
-            team_stats: gameData.teamStats,
+            team_stats: gameData.teamStats || {},
             player_stats: gameData.playerStats || []
           }])
           .select()
@@ -50,8 +50,8 @@ export const useGameStore = defineStore('game', {
           .update({
             name: gameData.name,
             date: gameData.date,
-            team_stats: gameData.teamStats,
-            player_stats: gameData.playerStats
+            team_stats: gameData.team_stats,
+            player_stats: gameData.player_stats || []
           })
           .eq('id', gameId)
           .select()
@@ -72,18 +72,28 @@ export const useGameStore = defineStore('game', {
       try {
         // 计算球队统计数据
         const teamStats = playerStats.reduce((team, player) => {
-          Object.keys(player).forEach(key => {
-            if (typeof player[key] === 'number') {
-              team[key] = (team[key] || 0) + player[key]
-            }
+          // 基础数据
+          ['MIN', 'FGM', 'FGA', 'threePM', 'threePA', 'FTM', 'FTA',
+           'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK', 'PF'].forEach(key => {
+            team[key] = (team[key] || 0) + (Number(player[key]) || 0)
           })
           return team
         }, {})
 
+        // 获取当前比赛数据以保留GR和GT
+        const currentGame = this.games.find(g => g.id === gameId)
+        const updatedTeamStats = {
+          ...teamStats,
+          GR: currentGame?.team_stats?.GR || '-',
+          GT: currentGame?.team_stats?.GT || '-'
+        }
+
+        console.log('Updating team stats:', updatedTeamStats)
+
         const { data, error } = await supabase
           .from('games')
           .update({
-            team_stats: teamStats,
+            team_stats: updatedTeamStats,
             player_stats: playerStats
           })
           .eq('id', gameId)
@@ -94,9 +104,33 @@ export const useGameStore = defineStore('game', {
         const index = this.games.findIndex(g => g.id === gameId)
         if (index !== -1) {
           this.games[index] = data
+          console.log('Updated game in store:', this.games[index])
         }
+
+        // 重新获取所有比赛数据以确保同步
+        await this.fetchGames()
       } catch (error) {
         console.error('Error updating game stats:', error)
+        throw error
+      }
+    },
+
+    async deleteGame(gameId) {
+      try {
+        const { error } = await supabase
+          .from('games')
+          .delete()
+          .eq('id', gameId)
+
+        if (error) throw error
+
+        // 从本地状态中移除
+        const index = this.games.findIndex(g => g.id === gameId)
+        if (index !== -1) {
+          this.games.splice(index, 1)
+        }
+      } catch (error) {
+        console.error('Error deleting game:', error)
         throw error
       }
     }
@@ -110,8 +144,8 @@ export const useGameStore = defineStore('game', {
     getGameStats: (state) => (id) => {
       const game = state.games.find(game => game.id === id)
       return game ? {
-        teamStats: game.team_stats,
-        playerStats: game.player_stats
+        teamStats: game.team_stats || {},
+        playerStats: game.player_stats || []
       } : null
     }
   }
