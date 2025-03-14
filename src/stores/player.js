@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { defineStore } from 'pinia'
+import { useGameStore } from './game'
 
 export const usePlayerStore = defineStore('player', {
   state: () => ({
@@ -28,9 +29,6 @@ export const usePlayerStore = defineStore('player', {
           .insert([{
             name: playerData.name,
             number: playerData.number,
-            position: playerData.position,
-            height: playerData.height,
-            weight: playerData.weight,
             stats: [] // 添加空的统计数据数组
           }])
           .select()
@@ -52,9 +50,6 @@ export const usePlayerStore = defineStore('player', {
           .update({
             name: playerData.name,
             number: playerData.number,
-            position: playerData.position,
-            height: playerData.height,
-            weight: playerData.weight,
             stats: playerData.stats || [] // 确保 stats 字段存在
           })
           .eq('id', playerId)
@@ -144,7 +139,17 @@ export const usePlayerStore = defineStore('player', {
     // 获取球员所有比赛数据
     getPlayerStats: (state) => (playerId) => {
       const player = state.players.find(p => p.id === playerId)
-      return player?.stats || []
+      const gameStore = useGameStore()
+      const playerStats = player?.stats || []
+
+      return playerStats.map(stat => {
+        const game = gameStore.getGameById(stat.gameId)
+        return {
+          ...stat,
+          name: game?.name || `比赛 ${stat.gameId}`,
+          team_stats: game?.team_stats || {}
+        }
+      })
     },
 
     // 计算球员平均数据
@@ -170,14 +175,20 @@ export const usePlayerStore = defineStore('player', {
         TOV: 0,
         STL: 0,
         BLK: 0,
-        PF: 0
+        PF: 0,
+        PTS: 0
       }
 
       // 计算总和
       stats.forEach(game => {
         Object.keys(averageStats).forEach(key => {
-          if (key !== 'gamesPlayed' && game[key]) {
-            averageStats[key] += game[key]
+          if (key !== 'gamesPlayed') {
+            if (key === 'PTS') {
+              // 计算得分：(FGM * 2) + (threePM * 3) + FTM
+              averageStats.PTS += (game.FGM * 2) + (game.threePM * 3) + game.FTM
+            } else if (game[key]) {
+              averageStats[key] += game[key]
+            }
           }
         })
       })

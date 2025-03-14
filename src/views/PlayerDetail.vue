@@ -1,7 +1,7 @@
 <script setup>
 import PlayerStatsTable from '@/components/PlayerStatsTable.vue';
 import { usePlayerStore } from '@/stores/player';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute()
@@ -12,6 +12,45 @@ const playerId = computed(() => Number(route.params.id))
 const player = computed(() => playerStore.players.find(p => p.id === playerId.value))
 const playerStats = computed(() => playerStore.getPlayerStats(playerId.value))
 const playerAverageStats = computed(() => playerStore.getPlayerAverageStats(playerId.value))
+
+// 编辑状态管理
+const isEditing = ref(false)
+const editingName = ref('')
+const editingNumber = ref('')
+
+// 开始编辑
+const startEdit = () => {
+  editingName.value = player.value.name
+  editingNumber.value = player.value.number
+  isEditing.value = true
+}
+
+// 保存编辑
+const saveEdit = async () => {
+  if (!editingName.value.trim()) {
+    alert('请输入球员姓名')
+    return
+  }
+
+  try {
+    await playerStore.updatePlayer(player.value.id, {
+      ...player.value,
+      name: editingName.value.trim(),
+      number: String(editingNumber.value)
+    })
+    isEditing.value = false
+  } catch (error) {
+    console.error('Error updating player:', error)
+    alert('保存失败，请重试')
+  }
+}
+
+// 取消编辑
+const cancelEdit = () => {
+  isEditing.value = false
+  editingName.value = ''
+  editingNumber.value = ''
+}
 
 // 确保数据加载
 onMounted(async () => {
@@ -59,7 +98,30 @@ const deletePlayer = async () => {
 
     <!-- 球员信息头 -->
     <div class="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
-      <h1 class="text-2xl font-bold">{{ player.name }}</h1>
+      <div v-if="!isEditing" class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xl text-gray-600">#{{ player.number || '-' }}</span>
+          <h1 class="text-2xl font-bold">{{ player.name }}</h1>
+        </div>
+        <button @click="startEdit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          编辑信息
+        </button>
+      </div>
+      <div v-else class="flex items-center gap-2">
+        <div class="flex gap-2">
+          <input v-model.number="editingNumber" type="number" min="0" placeholder="球员号码"
+            class="px-2 py-1 border rounded w-24" />
+          <input v-model="editingName" type="text" placeholder="球员姓名" class="px-2 py-1 border rounded" />
+        </div>
+        <div class="flex gap-2">
+          <button @click="saveEdit" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+            保存
+          </button>
+          <button @click="cancelEdit" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+            取消
+          </button>
+        </div>
+      </div>
       <button @click="deletePlayer" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
         删除球员
       </button>
@@ -70,20 +132,58 @@ const deletePlayer = async () => {
       <!-- 生涯数据总览 -->
       <div class="p-4 border rounded bg-white shadow">
         <h3 class="text-lg font-semibold mb-4">生涯数据总览</h3>
-        <div class="space-y-2">
-          <div class="flex justify-between">
-            <span>比赛场次:</span>
-            <span class="font-bold">{{ playerStats.length }}</span>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="stat-card">
+            <div class="text-gray-600">比赛场次</div>
+            <div class="text-2xl font-bold">{{ playerStats.length }}</div>
           </div>
-          <div class="flex justify-between">
-            <span>场均得分:</span>
-            <span class="font-bold">{{ playerAverageStats?.PTS?.toFixed(1) || '0.0' }}</span>
+          <div class="stat-card">
+            <div class="text-gray-600">场均得分</div>
+            <div class="text-2xl font-bold">{{ playerAverageStats?.PTS?.toFixed(1) || '0.0' }}</div>
           </div>
-          <div class="flex justify-between">
-            <span>命中率:</span>
-            <span class="font-bold">
+          <div class="stat-card">
+            <div class="text-gray-600">投篮命中率</div>
+            <div class="text-2xl font-bold">
               {{ calculatePercentage(playerAverageStats?.FGM, playerAverageStats?.FGA) }}
-            </span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="text-gray-600">三分命中率</div>
+            <div class="text-2xl font-bold">
+              {{ calculatePercentage(playerAverageStats?.threePM, playerAverageStats?.threePA) }}
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="text-gray-600">罚球命中率</div>
+            <div class="text-2xl font-bold">
+              {{ calculatePercentage(playerAverageStats?.FTM, playerAverageStats?.FTA) }}
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="text-gray-600">场均篮板</div>
+            <div class="text-2xl font-bold">
+              {{ ((playerAverageStats?.OREB || 0) + (playerAverageStats?.DREB || 0)).toFixed(1) }}
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="text-gray-600">场均助攻</div>
+            <div class="text-2xl font-bold">{{ playerAverageStats?.AST?.toFixed(1) || '0.0' }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-gray-600">场均抢断</div>
+            <div class="text-2xl font-bold">{{ playerAverageStats?.STL?.toFixed(1) || '0.0' }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-gray-600">场均盖帽</div>
+            <div class="text-2xl font-bold">{{ playerAverageStats?.BLK?.toFixed(1) || '0.0' }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-gray-600">场均失误</div>
+            <div class="text-2xl font-bold">{{ playerAverageStats?.TOV?.toFixed(1) || '0.0' }}</div>
+          </div>
+          <div class="stat-card">
+            <div class="text-gray-600">场均犯规</div>
+            <div class="text-2xl font-bold">{{ playerAverageStats?.PF?.toFixed(1) || '0.0' }}</div>
           </div>
         </div>
       </div>

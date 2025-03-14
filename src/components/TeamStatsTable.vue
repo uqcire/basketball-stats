@@ -51,40 +51,49 @@ const goToGameDetail = (gameId) => {
 
 <template>
   <table class="min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
+    <thead class="">
       <tr>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          比赛
+          Game
         </th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          比赛结果
+          Date
         </th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          比赛类型
+          GR
         </th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          得分
+          GT
         </th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          投篮
+          PTS
         </th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          三分
+          FG
         </th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          罚球
+          3FG
         </th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          篮板
+          FT
         </th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          助攻
+          REB
         </th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          抢断
+          AST
         </th>
         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          盖帽
+          STL
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          BLK
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          TOV
+        </th>
+        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+          PF
         </th>
       </tr>
     </thead>
@@ -107,6 +116,9 @@ const goToGameDetail = (gameId) => {
               <span class="text-sm">✎</span>
             </button>
           </div>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ stat.date }}
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
           {{ stat.GR }}
@@ -149,6 +161,12 @@ const goToGameDetail = (gameId) => {
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
           {{ stat.BLK }}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ stat.TOV }}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          {{ stat.PF }}
         </td>
       </tr>
     </tbody>

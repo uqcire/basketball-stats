@@ -1,11 +1,12 @@
 <script setup>
 import { usePlayerStore } from '@/stores/player';
-import { ref, onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter()
 const store = usePlayerStore()
 const newPlayerName = ref('')
+const newPlayerNumber = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 
@@ -23,13 +24,18 @@ const addNewPlayer = async () => {
     return
   }
 
+  if (!newPlayerNumber.value) {
+    errorMessage.value = '请输入球员号码'
+    return
+  }
+
   try {
     isLoading.value = true
     errorMessage.value = ''
 
-    const playerId = store.addPlayer({
+    const playerId = await store.addPlayer({
       name: newPlayerName.value.trim(),
-      number: '',
+      number: String(newPlayerNumber.value),
       position: '',
       height: '',
       weight: '',
@@ -39,6 +45,7 @@ const addNewPlayer = async () => {
 
     // 清空输入并跳转
     newPlayerName.value = ''
+    newPlayerNumber.value = ''
     router.push(`/players/${playerId}`)
   } catch (error) {
     console.error('添加球员失败:', error)
@@ -73,6 +80,8 @@ const calculatePercentage = (made, attempted) => {
         <div class="flex gap-2">
           <input v-model="newPlayerName" placeholder="输入新球员姓名" class="px-2 border rounded" :disabled="isLoading"
             @keyup.enter="addNewPlayer" />
+          <input v-model.number="newPlayerNumber" placeholder="输入球员号码" class="px-2 border rounded w-24"
+            :disabled="isLoading" @keyup.enter="addNewPlayer" type="number" min="0" />
           <button @click="addNewPlayer"
             class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"
             :disabled="isLoading">
@@ -89,11 +98,9 @@ const calculatePercentage = (made, attempted) => {
     <div v-for="player in store.players" :key="player.id"
       class="mb-4 p-4 border rounded hover:shadow-lg transition-shadow">
       <router-link :to="`/players/${player.id}`" class="block hover:text-blue-500 transition-colors">
-        <h3 class="text-xl font-bold">{{ player.name }}</h3>
-        <div class="text-sm text-gray-500">
-          <span>ID: {{ player.id }}</span>
-          <span v-if="player.number" class="ml-2">号码: {{ player.number }}</span>
-          <span v-if="player.position" class="ml-2">位置: {{ player.position }}</span>
+        <div class="flex items-center gap-2">
+          <span class="text-lg text-gray-600">#{{ player.number || '-' }}</span>
+          <h3 class="text-xl font-bold">{{ player.name }}</h3>
         </div>
       </router-link>
 

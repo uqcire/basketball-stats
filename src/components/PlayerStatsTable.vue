@@ -34,15 +34,15 @@ const calculateREB = (record) => {
   <div class="overflow-x-auto">
     <table class="min-w-full table-auto border-collapse">
       <thead>
-        <tr class="text-center bg-gray-100">
+        <tr class="text-center">
           <th v-for="header in headers" :key="header" class="border p-2">{{ header }}</th>
         </tr>
       </thead>
       <tbody>
         <tr class="text-center hover:bg-gray-50" v-for="(record, index) in stats" :key="index">
-          <td class="border p-2">{{ record.GAME || index + 1 }}</td>
-          <td class="border p-2">{{ record.GR || '-' }}</td>
-          <td class="border p-2">{{ record.GT || '-' }}</td>
+          <td class="border p-2">{{ record.name || `比赛 ${index + 1}` }}</td>
+          <td class="border p-2">{{ record.team_stats?.GR || '-' }}</td>
+          <td class="border p-2">{{ record.team_stats?.GT || '-' }}</td>
           <td class="border p-2">{{ index + 1 }}</td>
           <td class="border p-2">{{ record.MIN || 0 }}</td>
           <td class="border p-2">{{ calculatePTS(record) }}</td>

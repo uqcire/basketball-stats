@@ -18,7 +18,7 @@ const editingGameName = ref('')
 const addNewGame = async () => {
   try {
     const gameData = {
-      name: `比赛 ${gameStore.games.length + 1}`,
+      name: `Game ${gameStore.games.length + 1}`,
       date: new Date().toISOString().split('T')[0],
       team_stats: {},
       player_stats: []
@@ -27,7 +27,7 @@ const addNewGame = async () => {
     router.push(`/game/${gameId}`)
   } catch (error) {
     console.error('Error creating new game:', error)
-    alert('创建新比赛失败，请重试')
+    alert('Error creating new game，please try again')
   }
 }
 
@@ -39,7 +39,7 @@ onMounted(async () => {
       gameStore.fetchGames()
     ])
   } catch (error) {
-    console.error('加载数据失败:', error)
+    console.error('Error loading data:', error)
   }
 })
 
@@ -160,66 +160,125 @@ const calculatePercentage = (made, attempted) => {
   <div class="container mx-auto">
     <div class="flex flex-col gap-6">
       <!-- 标题和添加按钮 -->
-      <div class="flex justify-between items-center">
-        <div>
-          <h1 class="text-3xl font-bold mb-2">球队数据统计</h1>
-          <p class="text-gray-600">共计 {{ teamGameStats.length }} 场比赛</p>
-        </div>
-        <button @click="addNewGame" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-          添加新比赛
-        </button>
+
+      <!-- Glossary -->
+      <div class="overflow-x-auto overflow-y-auto">
+        <table class="table-sm text-left font-bold">
+          <!-- head -->
+          <thead>
+            <tr>
+              <th>Glossary</th>
+            </tr>
+          </thead>
+          <!-- body -->
+          <tbody>
+            <!-- row 1 -->
+            <tr>
+              <th>GP - Game Played</th>
+              <th>GR - Game Result</th>
+              <th>GT - Game Type</th>
+              <th>PTS - Points</th>
+              <th>FG - Field Goal</th>
+              <th>FGM - Field Goal Made</th>
+
+            </tr>
+            <!-- row 2 -->
+            <tr>
+              <th>FGA - Field Goal Attempted</th>
+              <th>FG% - Field Goal Percentage</th>
+              <th>3P - Three-Point Field Goal</th>
+              <th>3PM - Three-Point Field Goal Made</th>
+              <th>3PA - Three-Point Field Goal Attempted</th>
+              <th>3P% - Three-Point Field Goal Percentage</th>
+
+            </tr>
+            <!-- row 3 -->
+            <tr>
+              <th>FT - Free Throw</th>
+              <th>FTM - Free Throw Made</th>
+              <th>FTA - Free Throw Attempted</th>
+              <th>FT% - Free Throw Percentage</th>
+              <th>OREB - Offensive Rebound</th>
+              <th>DREB - Defensive Rebound</th>
+
+            </tr>
+            <!-- row 4 -->
+            <tr>
+              <th>REB - Rebound</th>
+              <th>AST - Assist</th>
+              <th>STL - Steal</th>
+              <td>BLK - Block</td>
+              <td>TOV - Turnover</td>
+              <td>PF - Personal Fouls</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       <!-- 平均数据卡片 -->
-      <div v-if="teamAverageStats" class="bg-white rounded-lg shadow p-6">
-        <h2 class="text-xl font-semibold mb-4">球队场均数据</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="stat-card">
-            <div class="text-gray-600">场均得分</div>
-            <div class="text-2xl font-bold">{{ teamAverageStats.PTS?.toFixed(1) || '0.0' }}</div>
+      <div class="p-6">
+        <h2 class="text-xl font-bold mb-4">Team Average Statistics</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">PTS</div>
+            <div class="stat-value">{{ teamAverageStats.PTS?.toFixed(1) || '0.0' }}</div>
           </div>
-          <div class="stat-card">
-            <div class="text-gray-600">投篮命中率</div>
-            <div class="text-2xl font-bold">
-              {{ calculatePercentage(teamAverageStats.FGM, teamAverageStats.FGA) }}
-            </div>
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">FG%</div>
+            <div class="stat-value">{{ calculatePercentage(teamAverageStats.FGM, teamAverageStats.FGA) }}</div>
           </div>
-          <div class="stat-card">
-            <div class="text-gray-600">三分命中率</div>
-            <div class="text-2xl font-bold">
-              {{ calculatePercentage(teamAverageStats.threePM, teamAverageStats.threePA) }}
-            </div>
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">3P%</div>
+            <div class="stat-value">{{ calculatePercentage(teamAverageStats.threePM, teamAverageStats.threePA) }}</div>
           </div>
-          <div class="stat-card">
-            <div class="text-gray-600">罚球命中率</div>
-            <div class="text-2xl font-bold">
-              {{ calculatePercentage(teamAverageStats.FTM, teamAverageStats.FTA) }}
-            </div>
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">FT%</div>
+            <div class="stat-value">{{ calculatePercentage(teamAverageStats.FTM, teamAverageStats.FTA) }}</div>
           </div>
-          <div class="stat-card">
-            <div class="text-gray-600">场均篮板</div>
-            <div class="text-2xl font-bold">
-              {{ ((teamAverageStats.OREB || 0) + (teamAverageStats.DREB || 0)).toFixed(1) }}
-            </div>
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">OREB</div>
+            <div class="stat-value">{{ (teamAverageStats.OREB)?.toFixed(1) || '0.0' }}</div>
           </div>
-          <div class="stat-card">
-            <div class="text-gray-600">场均助攻</div>
-            <div class="text-2xl font-bold">{{ teamAverageStats.AST?.toFixed(1) || '0.0' }}</div>
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">DREB</div>
+            <div class="stat-value">{{ (teamAverageStats.DREB)?.toFixed(1) || '0.0' }}</div>
           </div>
-          <div class="stat-card">
-            <div class="text-gray-600">场均抢断</div>
-            <div class="text-2xl font-bold">{{ teamAverageStats.STL?.toFixed(1) || '0.0' }}</div>
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">REB</div>
+            <div class="stat-value">{{ (teamAverageStats.OREB + teamAverageStats.DREB)?.toFixed(1) || '0.0' }}</div>
           </div>
-          <div class="stat-card">
-            <div class="text-gray-600">场均盖帽</div>
-            <div class="text-2xl font-bold">{{ teamAverageStats.BLK?.toFixed(1) || '0.0' }}</div>
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">AST</div>
+            <div class="stat-value">{{ teamAverageStats.AST?.toFixed(1) || '0.0' }}</div>
+          </div>
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">STL</div>
+            <div class="stat-value">{{ teamAverageStats.STL?.toFixed(1) || '0.0' }}</div>
+          </div>
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">BLK</div>
+            <div class="stat-value">{{ teamAverageStats.BLK?.toFixed(1) || '0.0' }}</div>
+          </div>
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">TOV</div>
+            <div class="stat-value">{{ teamAverageStats.TOV?.toFixed(1) || '0.0' }}</div>
+          </div>
+          <div class="stat rounded-lg shadow-lg">
+            <div class="stat-title">PF</div>
+            <div class="stat-value">{{ teamAverageStats.PF?.toFixed(1) || '0.0' }}</div>
           </div>
         </div>
       </div>
 
       <!-- 比赛数据表格 -->
-      <div class="bg-white rounded-lg shadow overflow-hidden">
-        <h2 class="text-xl font-semibold p-4 border-b">比赛详细数据</h2>
+      <div class="overflow-hidden">
+        <div class="flex justify-between items-center p-4 border-b">
+          <h2 class="text-xl font-semibold ">Game Statistics ({{ teamGameStats.length }} GP)</h2>
+          <button @click="addNewGame" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+            Add New Game
+          </button>
+        </div>
+
         <div class="overflow-x-auto">
           <TeamStatsTable :stats="teamGameStats" :editing-game-id="editingGameId" :editing-game-name="editingGameName"
             @start-edit="startEditGameName" @save-edit="saveGameName" @cancel-edit="cancelEdit"
