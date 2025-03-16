@@ -105,7 +105,22 @@ const teamGameStats = computed(() => {
 // 获取团队平均数据
 const teamAverageStats = computed(() => {
   const games = teamGameStats.value
-  if (!games.length) return null
+  if (!games || !games.length) return {
+    PTS: 0,
+    FGM: 0,
+    FGA: 0,
+    threePM: 0,
+    threePA: 0,
+    FTM: 0,
+    FTA: 0,
+    OREB: 0,
+    DREB: 0,
+    AST: 0,
+    STL: 0,
+    BLK: 0,
+    TOV: 0,
+    PF: 0
+  }
 
   const totalGames = games.length
   const totals = games.reduce((acc, game) => {
@@ -207,82 +222,76 @@ const calculatePercentage = (made, attempted) => {
               <th>REB - Rebound</th>
               <th>AST - Assist</th>
               <th>STL - Steal</th>
-              <td>BLK - Block</td>
-              <td>TOV - Turnover</td>
-              <td>PF - Personal Fouls</td>
+              <th>BLK - Block</th>
+              <th>TOV - Turnover</th>
+              <th>PF - Personal Fouls</th>
             </tr>
           </tbody>
         </table>
       </div>
 
       <!-- 平均数据卡片 -->
-      <div class="p-6">
-        <h2 class="text-xl font-bold mb-4">Team Average Statistics</h2>
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div class="p-4 border rounded shadow-lg">
+        <h3 class="text-xl font-bold">Team Average Statistics</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">PTS</div>
-            <div class="stat-value">{{ teamAverageStats.PTS?.toFixed(1) || '0.0' }}</div>
+            <div class="stat-value">{{ teamAverageStats?.PTS?.toFixed(1) || '0.0' }}</div>
           </div>
           <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">FG%</div>
-            <div class="stat-value">{{ calculatePercentage(teamAverageStats.FGM, teamAverageStats.FGA) }}</div>
+            <div class="stat-value">{{ calculatePercentage(teamAverageStats?.FGM, teamAverageStats?.FGA) }}</div>
           </div>
           <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">3P%</div>
-            <div class="stat-value">{{ calculatePercentage(teamAverageStats.threePM, teamAverageStats.threePA) }}</div>
+            <div class="stat-value">{{ calculatePercentage(teamAverageStats?.threePM, teamAverageStats?.threePA) }}
+            </div>
           </div>
           <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">FT%</div>
-            <div class="stat-value">{{ calculatePercentage(teamAverageStats.FTM, teamAverageStats.FTA) }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">OREB</div>
-            <div class="stat-value">{{ (teamAverageStats.OREB)?.toFixed(1) || '0.0' }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">DREB</div>
-            <div class="stat-value">{{ (teamAverageStats.DREB)?.toFixed(1) || '0.0' }}</div>
+            <div class="stat-value">{{ calculatePercentage(teamAverageStats?.FTM, teamAverageStats?.FTA) }}</div>
           </div>
           <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">REB</div>
-            <div class="stat-value">{{ (teamAverageStats.OREB + teamAverageStats.DREB)?.toFixed(1) || '0.0' }}</div>
+            <div class="stat-value">{{ ((teamAverageStats?.OREB || 0) + (teamAverageStats?.DREB || 0)).toFixed(1) }}
+            </div>
           </div>
           <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">AST</div>
-            <div class="stat-value">{{ teamAverageStats.AST?.toFixed(1) || '0.0' }}</div>
+            <div class="stat-value">{{ teamAverageStats?.AST?.toFixed(1) || '0.0' }}</div>
           </div>
           <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">STL</div>
-            <div class="stat-value">{{ teamAverageStats.STL?.toFixed(1) || '0.0' }}</div>
+            <div class="stat-value">{{ teamAverageStats?.STL?.toFixed(1) || '0.0' }}</div>
           </div>
           <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">BLK</div>
-            <div class="stat-value">{{ teamAverageStats.BLK?.toFixed(1) || '0.0' }}</div>
+            <div class="stat-value">{{ teamAverageStats?.BLK?.toFixed(1) || '0.0' }}</div>
           </div>
           <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">TOV</div>
-            <div class="stat-value">{{ teamAverageStats.TOV?.toFixed(1) || '0.0' }}</div>
+            <div class="stat-value">{{ teamAverageStats?.TOV?.toFixed(1) || '0.0' }}</div>
           </div>
           <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">PF</div>
-            <div class="stat-value">{{ teamAverageStats.PF?.toFixed(1) || '0.0' }}</div>
+            <div class="stat-value">{{ teamAverageStats?.PF?.toFixed(1) || '0.0' }}</div>
           </div>
         </div>
       </div>
-
       <!-- 比赛数据表格 -->
-      <div class="overflow-hidden">
-        <div class="flex justify-between items-center p-4 border-b">
-          <h2 class="text-xl font-semibold ">Game Statistics ({{ teamGameStats.length }} GP)</h2>
-          <button @click="addNewGame" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-            Add New Game
-          </button>
-        </div>
-
-        <div class="overflow-x-auto">
-          <TeamStatsTable :stats="teamGameStats" :editing-game-id="editingGameId" :editing-game-name="editingGameName"
-            @start-edit="startEditGameName" @save-edit="saveGameName" @cancel-edit="cancelEdit"
-            @update:editing-game-name="editingGameName = $event" />
+      <div class="flex flex-col gap-4">
+        <div class="overflow-hidden border rounded-lg shadow-lg p-4">
+          <div class="flex justify-between items-center p-4 border-b">
+            <h2 class="text-xl font-bold">Game Statistics ({{ teamGameStats.length }} GP)</h2>
+            <button @click="addNewGame" class="btn btn-primary btn-sm">
+              Add New Game
+            </button>
+          </div>
+          <div class="overflow-hidden rounded-lg shadow-lg pt-4">
+            <TeamStatsTable :stats="teamGameStats" :editing-game-id="editingGameId" :editing-game-name="editingGameName"
+              @start-edit="startEditGameName" @save-edit="saveGameName" @cancel-edit="cancelEdit"
+              @update:editing-game-name="editingGameName = $event" />
+          </div>
         </div>
       </div>
     </div>

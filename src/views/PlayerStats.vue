@@ -9,6 +9,7 @@ const newPlayerName = ref('')
 const newPlayerNumber = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
+const showAddDialog = ref(false)
 
 // 确保数据加载
 onMounted(async () => {
@@ -17,15 +18,31 @@ onMounted(async () => {
   }
 })
 
+// 打开添加球员对话框
+const openAddDialog = () => {
+  showAddDialog.value = true
+  newPlayerName.value = ''
+  newPlayerNumber.value = ''
+  errorMessage.value = ''
+}
+
+// 关闭添加球员对话框
+const closeAddDialog = () => {
+  showAddDialog.value = false
+  newPlayerName.value = ''
+  newPlayerNumber.value = ''
+  errorMessage.value = ''
+}
+
 // 新增球员方法
 const addNewPlayer = async () => {
   if (!newPlayerName.value.trim()) {
-    errorMessage.value = '请输入球员姓名'
+    errorMessage.value = 'Please enter the player\'s name'
     return
   }
 
   if (!newPlayerNumber.value) {
-    errorMessage.value = '请输入球员号码'
+    errorMessage.value = 'Please enter the player\'s number'
     return
   }
 
@@ -36,10 +53,6 @@ const addNewPlayer = async () => {
     const playerId = await store.addPlayer({
       name: newPlayerName.value.trim(),
       number: String(newPlayerNumber.value),
-      position: '',
-      height: '',
-      weight: '',
-      birthdate: '',
       stats: []
     })
 
@@ -48,8 +61,8 @@ const addNewPlayer = async () => {
     newPlayerNumber.value = ''
     router.push(`/players/${playerId}`)
   } catch (error) {
-    console.error('添加球员失败:', error)
-    errorMessage.value = '添加球员失败，请重试'
+    console.error('ADD PLAYER ERROR:', error)
+    errorMessage.value = 'Add player failed, please try again'
   } finally {
     isLoading.value = false
   }
@@ -73,76 +86,175 @@ const calculatePercentage = (made, attempted) => {
 </script>
 
 <template>
-  <div class="p-4">
-    <div class="flex flex-col md:flex-row justify-between mb-4 gap-2">
-      <h2 class="text-2xl font-bold">全体球员数据</h2>
-      <div class="flex flex-col gap-2">
-        <div class="flex gap-2">
-          <input v-model="newPlayerName" placeholder="输入新球员姓名" class="px-2 border rounded" :disabled="isLoading"
-            @keyup.enter="addNewPlayer" />
-          <input v-model.number="newPlayerNumber" placeholder="输入球员号码" class="px-2 border rounded w-24"
-            :disabled="isLoading" @keyup.enter="addNewPlayer" type="number" min="0" />
-          <button @click="addNewPlayer"
-            class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-blue-300"
-            :disabled="isLoading">
-            {{ isLoading ? '添加中...' : '添加新球员' }}
-          </button>
-        </div>
-        <div v-if="errorMessage" class="text-red-500 text-sm">
-          {{ errorMessage }}
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col gap-4 border rounded-lg shadow-lg p-4">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6 border-b pb-4">
+        <h1 class="text-xl font-bold">Player Statistics</h1>
+        <button @click="openAddDialog" class="btn btn-primary">Add New Player</button>
+      </div>
+      <!-- 球员数据表格 -->
+      <div class="overflow-hidden rounded-lg shadow-lg">
+        <div class="overflow-x-auto">
+          <table class="min-w-full table-md">
+            <thead>
+              <tr>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">Player</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">Number</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">GP</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">MIN</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">AP</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">FG%</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">3P%</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">FT%</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">REB</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">AST</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">STL</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">BLK</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">TOV</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">PF</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="player in store.players" :key="player.id" class="hover:bg-gray-100 cursor-pointer"
+                @click="router.push(`/players/${player.id}`)">
+                <!-- Player Name -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>{{ player.name }}</div>
+                </td>
+                <!-- Player Number -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>#{{ player.number || '-' }}</div>
+                </td>
+                <!-- GP -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>{{ getPlayerStats(player.id).length }}</div>
+                </td>
+                <!-- MIN -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>{{ getPlayerAverageStats(player.id)?.MIN?.toFixed(1) || '0.0' }}
+                  </div>
+                </td>
+                <!-- AP -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>{{ getPlayerAverageStats(player.id)?.AP?.toFixed(1) || '0.0' }}
+                  </div>
+                </td>
+                <!-- FG% -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    {{ calculatePercentage(
+                      getPlayerAverageStats(player.id)?.FGM,
+                      getPlayerAverageStats(player.id)?.FGA
+                    ) }}
+                  </div>
+                </td>
+                <!-- 3P% -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    {{ calculatePercentage(
+                      getPlayerAverageStats(player.id)?.threePM,
+                      getPlayerAverageStats(player.id)?.threePA
+                    ) }}
+                  </div>
+                </td>
+                <!-- FT% -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    {{ calculatePercentage(
+                      getPlayerAverageStats(player.id)?.FTM,
+                      getPlayerAverageStats(player.id)?.FTA
+                    ) }}
+                  </div>
+                </td>
+                <!-- REB -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    {{ ((getPlayerAverageStats(player.id)?.OREB || 0) +
+                      (getPlayerAverageStats(player.id)?.DREB || 0)).toFixed(1) }}
+                  </div>
+                </td>
+                <!-- AST -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    {{ getPlayerAverageStats(player.id)?.AST?.toFixed(1) || '0.0' }}
+                  </div>
+                </td>
+                <!-- STL -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    {{ getPlayerAverageStats(player.id)?.STL?.toFixed(1) || '0.0' }}
+                  </div>
+                </td>
+                <!-- BLK -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    {{ getPlayerAverageStats(player.id)?.BLK?.toFixed(1) || '0.0' }}
+                  </div>
+                </td>
+                <!-- TOV -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    {{ getPlayerAverageStats(player.id)?.TOV?.toFixed(1) || '0.0' }}
+                  </div>
+                </td>
+                <!-- PF -->
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div>
+                    {{ getPlayerAverageStats(player.id)?.PF?.toFixed(1) || '0.0' }}
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
-    <!-- 球员列表 -->
-    <div v-for="player in store.players" :key="player.id"
-      class="mb-4 p-4 border rounded hover:shadow-lg transition-shadow">
-      <router-link :to="`/players/${player.id}`" class="block hover:text-blue-500 transition-colors">
-        <div class="flex items-center gap-2">
-          <span class="text-lg text-gray-600">#{{ player.number || '-' }}</span>
-          <h3 class="text-xl font-bold">{{ player.name }}</h3>
-        </div>
-      </router-link>
 
-      <!-- 关键数据速览 -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
-        <div class="p-2 bg-gray-100 rounded">
-          <div class="text-sm text-gray-500">比赛场次</div>
-          <div class="font-bold">{{ getPlayerStats(player.id).length }}</div>
-        </div>
-
-        <div class="p-2 bg-gray-100 rounded">
-          <div class="text-sm text-gray-500">场均得分</div>
-          <div class="font-bold">
-            {{ getPlayerAverageStats(player.id)?.PTS?.toFixed(1) || '0.0' }}
-          </div>
-        </div>
-
-        <div class="p-2 bg-gray-100 rounded">
-          <div class="text-sm text-gray-500">命中率</div>
-          <div class="font-bold">
-            {{ calculatePercentage(
-              getPlayerAverageStats(player.id)?.FGM,
-              getPlayerAverageStats(player.id)?.FGA
-            ) }}
-          </div>
-        </div>
-
-        <div class="p-2 bg-gray-100 rounded">
-          <div class="text-sm text-gray-500">三分命中率</div>
-          <div class="font-bold">
-            {{ calculatePercentage(
-              getPlayerAverageStats(player.id)?.threePM,
-              getPlayerAverageStats(player.id)?.threePA
-            ) }}
+    <!-- 添加球员对话框 -->
+    <div v-if="showAddDialog" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="card bg-white w-96">
+        <div class="card-body">
+          <!-- Title -->
+          <h2 class="card-title text-2xl font-bold pb-4">Add new player</h2>
+          <!-- Form -->
+          <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-2">
+              <label class="floating-label">
+                <span>Player Name</span>
+                <input v-model="newPlayerName" type="text" placeholder="Please enter the player's name"
+                  class="input input-lg" :disabled="isLoading" @keyup.enter="addNewPlayer" />
+              </label>
+            </div>
+            <div class="flex flex-col gap-2">
+              <label class="floating-label">
+                <span>Player Number</span>
+                <input v-model.number="newPlayerNumber" type="number" placeholder="Please enter the player's number"
+                  class="input input-lg" :disabled="isLoading" @keyup.enter="addNewPlayer" />
+              </label>
+            </div>
+            <div v-if="errorMessage" class="text-red-500 text-sm">
+              {{ errorMessage }}
+            </div>
+            <!-- Actions -->
+            <div class="card-actions">
+              <div class="flex gap-2">
+                <button @click="addNewPlayer" class="btn btn-primary" :disabled="isLoading">
+                  {{ isLoading ? 'Adding...' : 'Confirm' }}
+                </button>
+                <button @click="closeAddDialog" class="btn" :disabled="isLoading">
+                  Cancel
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-
     <!-- 无数据提示 -->
     <div v-if="store.players.length === 0" class="text-center text-gray-500 mt-8">
-      暂无球员数据
+      No player data yet
     </div>
   </div>
 </template>

@@ -25,6 +25,7 @@ const isEditing = ref(false)
 const startEditGameInfo = () => {
   editingGameData.value = {
     name: game.value.name,
+    date: game.value.date || new Date().toISOString().split('T')[0],
     GR: game.value.team_stats?.GR || '-',
     GT: game.value.team_stats?.GT || '-'
   }
@@ -36,11 +37,13 @@ const saveGameInfo = async () => {
   try {
     const updatedGame = {
       name: editingGameData.value.name,
+      date: editingGameData.value.date || game.value.date,
       team_stats: {
         ...game.value.team_stats,
         GR: editingGameData.value.GR,
         GT: editingGameData.value.GT
-      }
+      },
+      player_stats: game.value.player_stats || [] // 保留原有的球员数据
     }
     console.log('Updating game with:', updatedGame)
     await gameStore.updateGame(game.value.id, updatedGame)
@@ -338,58 +341,63 @@ const removePlayer = async (playerId) => {
 </script>
 
 <template>
-
   <div v-if="game" class="container mx-auto px-4 py-8">
     <div class="flex gap-4 flex-col">
       <!-- 顶部导航和标题 -->
       <div class="flex items-center justify-between">
-        <button @click="goBack" class="btn btn-primary">
-          ← Home
+        <button @click="goBack" class="btn btn-soft btn-sm">
+          ← Team
         </button>
         <div class="flex gap-2">
           <div class="relative" ref="dropdownRef">
-            <button @click.stop="showAddPlayer = !showAddPlayer" class="btn btn-secondary">
+            <button @click.stop="showAddPlayer = !showAddPlayer" class="btn btn-primary btn-sm">
               Add Player
             </button>
             <!-- 下拉菜单 -->
-            <div v-if="showAddPlayer" class="absolute right-0 mt-2 w-80 bg-base-100 rounded-lg shadow-xl z-50">
-              <div class="p-4">
-                <h3 class="text-xl font-bold mb-4">Add Player</h3>
-                <div v-if="availablePlayers.length > 0">
-                  <div class="form-control w-full">
-                    <div class="bg-white border rounded-lg max-h-64 overflow-y-auto">
-                      <div class="p-2 border-b sticky top-0 bg-white">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                          <input type="checkbox" class="checkbox"
-                            :checked="selectedPlayerIds.length === availablePlayers.length"
-                            @change="toggleAllPlayers" />
-                          <span>Select All</span>
-                        </label>
+            <div v-if="showAddPlayer" class="absolute right-0 mt-4 w-80 bg-base-100 rounded-lg shadow-xl z-50 ">
+              <div class="card bg-white w-96">
+                <div class="card-body">
+                  <h2 class="card-title text-2xl font-bold pb-4">Add Player</h2>
+                  <div class="flex flex-col gap-4">
+                    <div v-if="availablePlayers.length > 0">
+                      <div class="form-control w-full">
+                        <div class="bg-white border rounded-lg max-h-64 overflow-y-auto">
+                          <div class="p-2 border-b sticky top-0 bg-white">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                              <input type="checkbox" class="checkbox"
+                                :checked="selectedPlayerIds.length === availablePlayers.length"
+                                @change="toggleAllPlayers" />
+                              <span>Select All</span>
+                            </label>
+                          </div>
+                          <div class="divide-y">
+                            <label v-for="player in availablePlayers" :key="player.id"
+                              class="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer">
+                              <input type="checkbox" class="checkbox" :value="player.id" v-model="selectedPlayerIds" />
+                              <span>#{{ player.number }} {{ player.name }}</span>
+                            </label>
+                          </div>
+                        </div>
                       </div>
-                      <div class="divide-y">
-                        <label v-for="player in availablePlayers" :key="player.id"
-                          class="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer">
-                          <input type="checkbox" class="checkbox" :value="player.id" v-model="selectedPlayerIds" />
-                          <span>#{{ player.number }} {{ player.name }}</span>
-                        </label>
+                      <div class="card-actions pt-4">
+                        <div class="flex gap-2">
+                          <button @click.stop="addMultiplePlayers" :disabled="!selectedPlayerIds.length"
+                            class="btn btn-primary btn-sm">
+                            Add Selected Players ({{ selectedPlayerIds.length }})
+                          </button>
+                          <button @click.stop="showAddPlayer = false" class="btn btn-soft btn-sm">Cancel</button>
+                        </div>
                       </div>
                     </div>
+                    <div v-else class="text-center text-gray-500 py-4">
+                      No players available
+                    </div>
                   </div>
-                  <div class="flex justify-end gap-2 mt-4">
-                    <button @click.stop="showAddPlayer = false" class="btn btn-sm">Cancel</button>
-                    <button @click.stop="addMultiplePlayers" :disabled="!selectedPlayerIds.length"
-                      class="btn btn-primary btn-sm">
-                      Add Selected Players ({{ selectedPlayerIds.length }})
-                    </button>
-                  </div>
-                </div>
-                <div v-else class="text-center text-gray-500 py-4">
-                  No players available
                 </div>
               </div>
             </div>
           </div>
-          <button @click="deleteGame" class="btn btn-error">
+          <button @click="deleteGame" class="btn btn-soft btn-sm">
             Delete Game
           </button>
         </div>
@@ -440,8 +448,8 @@ const removePlayer = async (playerId) => {
           <!-- 编辑按钮 -->
           <div class="flex items-center gap-2">
             <template v-if="isEditing">
-              <button @click="saveGameInfo" class="btn btn-success btn-sm">Save</button>
-              <button @click="cancelEdit" class="btn btn-error btn-sm">Cancel</button>
+              <button @click="saveGameInfo" class="btn btn-primary btn-sm">Save</button>
+              <button @click="cancelEdit" class="btn btn-soft btn-sm">Cancel</button>
             </template>
             <button v-else @click="startEditGameInfo" class="btn btn-primary btn-sm">Edit</button>
           </div>
@@ -449,16 +457,16 @@ const removePlayer = async (playerId) => {
       </div>
 
       <!-- 球队数据卡片 -->
-      <div class="card rounded-lg shadow p-6 mb-8">
+      <div class="card rounded-lg shadow p-6">
         <h2 class="text-xl font-bold pb-4">Team Statistics</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">PTS</div>
             <div class="stat-value">
               {{ calculateTeamPoints(teamStats) }}
             </div>
           </div>
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">FG</div>
             <div class="stat-value">
               {{ teamStats.FGM || 0 }}/{{ teamStats.FGA || 0 }}
@@ -467,7 +475,7 @@ const removePlayer = async (playerId) => {
               </span>
             </div>
           </div>
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">3P</div>
             <div class="stat-value">
               {{ teamStats.threePM || 0 }}/{{ teamStats.threePA || 0 }}
@@ -476,7 +484,7 @@ const removePlayer = async (playerId) => {
               </span>
             </div>
           </div>
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">FT</div>
             <div class="stat-value">
               {{ teamStats.FTM || 0 }}/{{ teamStats.FTA || 0 }}
@@ -485,15 +493,15 @@ const removePlayer = async (playerId) => {
               </span>
             </div>
           </div>
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">OREB</div>
             <div class="stat-value">{{ teamStats.OREB || 0 }}</div>
           </div>
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">DREB</div>
             <div class="stat-value">{{ teamStats.DREB || 0 }}</div>
           </div>
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">REB</div>
             <div class="stat-value">
               {{ (teamStats.OREB || 0) + (teamStats.DREB || 0) }}
@@ -503,23 +511,23 @@ const removePlayer = async (playerId) => {
             </div>
           </div>
 
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">AST</div>
             <div class="stat-value">{{ teamStats.AST || 0 }}</div>
           </div>
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">STL</div>
             <div class="stat-value">{{ teamStats.STL || 0 }}</div>
           </div>
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">BLK</div>
             <div class="stat-value">{{ teamStats.BLK || 0 }}</div>
           </div>
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">TOV</div>
             <div class="stat-value">{{ teamStats.TOV || 0 }}</div>
           </div>
-          <div class="stat shadow-lg">
+          <div class="stat rounded-lg shadow-lg">
             <div class="stat-title">PF</div>
             <div class="stat-value">{{ teamStats.PF || 0 }}</div>
           </div>
@@ -527,220 +535,224 @@ const removePlayer = async (playerId) => {
       </div>
 
       <!-- 球员数据表格 -->
-      <div class="rounded-lg shadow-lg overflow-hidden">
-        <div class="flex justify-between items-center p-4 border-b">
-          <h2 class="text-xl font-semibold">Box Score</h2>
-          <div class="flex gap-2">
-            <template v-if="editingMode">
-              <button @click="saveBatchStats" class="btn btn-success btn-sm">Save All</button>
-              <button @click="cancelBatchEdit" class="btn btn-error btn-sm">Cancel</button>
-            </template>
-            <button v-else @click="startBatchEdit" class="btn btn-primary btn-sm">Edit All</button>
+      <div class="rounded-lg shadow-lg border overflow-hidden">
+        <div class="flex flex-col gap-4 p-4">
+          <div class="flex justify-between items-center mb-6 border-b pb-4">
+            <h2 class="text-xl font-bold">Box Score</h2>
+            <div class="flex gap-2">
+              <template v-if="editingMode">
+                <button @click="saveBatchStats" class="btn btn-primary btn-sm">Save All</button>
+                <button @click="cancelBatchEdit" class="btn btn-soft btn-sm">Cancel</button>
+              </template>
+              <button v-else @click="startBatchEdit" class="btn btn-primary btn-sm">Edit All</button>
+            </div>
+          </div>
+          <div class="overflow-hidden rounded-lg shadow-lg">
+            <table class="table-md min-w-full">
+              <thead>
+                <tr>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    Player
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    #
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    PTS
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    MIN
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    FGM/FGA
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    3PM/3PA
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    FTM/FTA
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    OREB/DREB
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    AST
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    STL
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    BLK
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    TOV
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    PF
+                  </th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                    Action
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                <tr v-for="stat in playerStats" :key="stat.playerId" class="hover:bg-gray-50"
+                  :class="{ 'bg-blue-50': editingMode }">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    {{ stat.name }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    {{ stat.number }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap font-semibold">
+                    {{ calculatePoints(stat) }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <template v-if="editingMode">
+                      <input v-model="editingStats[stat.playerId].MIN" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                    </template>
+                    <template v-else>
+                      {{ stat.MIN }}
+                    </template>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <template v-if="editingMode">
+                      <input v-model="editingStats[stat.playerId].FGM" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                      /
+                      <input v-model="editingStats[stat.playerId].FGA" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                    </template>
+                    <template v-else>
+                      {{ stat.FGM }}/{{ stat.FGA }}
+                      <span class="text-gray-500 text-sm">
+                        ({{ calculatePercentage(stat.FGM, stat.FGA) }})
+                      </span>
+                    </template>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <template v-if="editingMode">
+                      <input v-model="editingStats[stat.playerId].threePM" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                      /
+                      <input v-model="editingStats[stat.playerId].threePA" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                    </template>
+                    <template v-else>
+                      {{ stat.threePM }}/{{ stat.threePA }}
+                      <span class="text-gray-500 text-sm">
+                        ({{ calculatePercentage(stat.threePM, stat.threePA) }})
+                      </span>
+                    </template>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <template v-if="editingMode">
+                      <input v-model="editingStats[stat.playerId].FTM" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                      /
+                      <input v-model="editingStats[stat.playerId].FTA" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                    </template>
+                    <template v-else>
+                      {{ stat.FTM }}/{{ stat.FTA }}
+                      <span class="text-gray-500 text-sm">
+                        ({{ calculatePercentage(stat.FTM, stat.FTA) }})
+                      </span>
+                    </template>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <template v-if="editingMode">
+                      <input v-model="editingStats[stat.playerId].OREB" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                      /
+                      <input v-model="editingStats[stat.playerId].DREB" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                    </template>
+                    <template v-else>
+                      {{ stat.OREB + stat.DREB }}
+                      <span class="text-gray-500 text-sm">
+                        ({{ stat.OREB }}/{{ stat.DREB }})
+                      </span>
+                    </template>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <template v-if="editingMode">
+                      <input v-model="editingStats[stat.playerId].AST" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                    </template>
+                    <template v-else>
+                      {{ stat.AST }}
+                    </template>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <template v-if="editingMode">
+                      <input v-model="editingStats[stat.playerId].STL" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                    </template>
+                    <template v-else>
+                      {{ stat.STL }}
+                    </template>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <template v-if="editingMode">
+                      <input v-model="editingStats[stat.playerId].BLK" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                    </template>
+                    <template v-else>
+                      {{ stat.BLK }}
+                    </template>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <template v-if="editingMode">
+                      <input v-model="editingStats[stat.playerId].TOV" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                    </template>
+                    <template v-else>
+                      {{ stat.TOV }}
+                    </template>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <template v-if="editingMode">
+                      <input v-model="editingStats[stat.playerId].PF" type="number" min="0"
+                        class="w-16 px-2 py-1 border rounded">
+                    </template>
+                    <template v-else>
+                      {{ stat.PF }}
+                    </template>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <template v-if="editingMode">
+                      <div class="flex gap-2">
+                        <button @click="saveBatchStats"
+                          class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                          Save
+                        </button>
+                        <button @click="cancelBatchEdit" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">
+                          Cancel
+                        </button>
+                      </div>
+                    </template>
+                    <template v-else>
+                      <div class="flex gap-2">
+                        <button @click="startBatchEdit"
+                          class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                          Edit
+                        </button>
+                        <button @click="removePlayer(stat.playerId)"
+                          class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                          Remove
+                        </button>
+                      </div>
+                    </template>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="table-MD min-w-full">
-            <thead>
-              <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Player
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  #
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  PTS
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  MIN
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  FGM/FGA
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  3PM/3PA
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  FTM/FTA
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  OREB/DREB
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  AST
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  STL
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  BLK
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  TOV
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  PF
-                </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-              <tr v-for="stat in playerStats" :key="stat.playerId" class="hover:bg-gray-50"
-                :class="{ 'bg-blue-50': editingMode }">
-                <td class="px-6 py-4 whitespace-nowrap">
-                  {{ stat.name }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  {{ stat.number }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap font-semibold">
-                  {{ calculatePoints(stat) }}
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <template v-if="editingMode">
-                    <input v-model="editingStats[stat.playerId].MIN" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                  </template>
-                  <template v-else>
-                    {{ stat.MIN }}
-                  </template>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <template v-if="editingMode">
-                    <input v-model="editingStats[stat.playerId].FGM" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                    /
-                    <input v-model="editingStats[stat.playerId].FGA" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                  </template>
-                  <template v-else>
-                    {{ stat.FGM }}/{{ stat.FGA }}
-                    <span class="text-gray-500 text-sm">
-                      ({{ calculatePercentage(stat.FGM, stat.FGA) }})
-                    </span>
-                  </template>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <template v-if="editingMode">
-                    <input v-model="editingStats[stat.playerId].threePM" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                    /
-                    <input v-model="editingStats[stat.playerId].threePA" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                  </template>
-                  <template v-else>
-                    {{ stat.threePM }}/{{ stat.threePA }}
-                    <span class="text-gray-500 text-sm">
-                      ({{ calculatePercentage(stat.threePM, stat.threePA) }})
-                    </span>
-                  </template>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <template v-if="editingMode">
-                    <input v-model="editingStats[stat.playerId].FTM" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                    /
-                    <input v-model="editingStats[stat.playerId].FTA" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                  </template>
-                  <template v-else>
-                    {{ stat.FTM }}/{{ stat.FTA }}
-                    <span class="text-gray-500 text-sm">
-                      ({{ calculatePercentage(stat.FTM, stat.FTA) }})
-                    </span>
-                  </template>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <template v-if="editingMode">
-                    <input v-model="editingStats[stat.playerId].OREB" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                    /
-                    <input v-model="editingStats[stat.playerId].DREB" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                  </template>
-                  <template v-else>
-                    {{ stat.OREB + stat.DREB }}
-                    <span class="text-gray-500 text-sm">
-                      ({{ stat.OREB }}/{{ stat.DREB }})
-                    </span>
-                  </template>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <template v-if="editingMode">
-                    <input v-model="editingStats[stat.playerId].AST" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                  </template>
-                  <template v-else>
-                    {{ stat.AST }}
-                  </template>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <template v-if="editingMode">
-                    <input v-model="editingStats[stat.playerId].STL" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                  </template>
-                  <template v-else>
-                    {{ stat.STL }}
-                  </template>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <template v-if="editingMode">
-                    <input v-model="editingStats[stat.playerId].BLK" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                  </template>
-                  <template v-else>
-                    {{ stat.BLK }}
-                  </template>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <template v-if="editingMode">
-                    <input v-model="editingStats[stat.playerId].TOV" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                  </template>
-                  <template v-else>
-                    {{ stat.TOV }}
-                  </template>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <template v-if="editingMode">
-                    <input v-model="editingStats[stat.playerId].PF" type="number" min="0"
-                      class="w-16 px-2 py-1 border rounded">
-                  </template>
-                  <template v-else>
-                    {{ stat.PF }}
-                  </template>
-                </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <template v-if="editingMode">
-                    <div class="flex gap-2">
-                      <button @click="saveBatchStats"
-                        class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
-                        Save
-                      </button>
-                      <button @click="cancelBatchEdit" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">
-                        Cancel
-                      </button>
-                    </div>
-                  </template>
-                  <template v-else>
-                    <div class="flex gap-2">
-                      <button @click="startBatchEdit"
-                        class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
-                        Edit
-                      </button>
-                      <button @click="removePlayer(stat.playerId)"
-                        class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
-                        Remove
-                      </button>
-                    </div>
-                  </template>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+
+
       </div>
     </div>
 
