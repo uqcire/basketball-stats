@@ -6,7 +6,7 @@ export const Routes = [
     name: 'Home',
     component: () => import('@/views/TeamStats.vue'),
     meta: {
-      title: 'Homepage',
+      title: 'Team Stats',
     }
   },
   {

@@ -50,12 +50,15 @@ const goToGameDetail = (gameId) => {
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-lg shadow-lg">
+  <div class="overflow-auto rounded-lg shadow-lg">
     <table class="table-md min-w-full">
       <thead>
         <tr>
           <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
             Game
+          </th>
+          <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+            Opponent
           </th>
           <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
             Date
@@ -104,6 +107,11 @@ const goToGameDetail = (gameId) => {
           <td class="px-6 py-4 whitespace-nowrap">
             {{ stat.name }}
           </td>
+          <!-- 对手名称 -->
+          <td class="px-6 py-4 whitespace-nowrap">
+            {{ stat.opponent }}
+          </td>
+          <!-- 比赛日期 -->
           <td class="px-6 py-4 whitespace-nowrap">
             {{ stat.date }}
           </td>

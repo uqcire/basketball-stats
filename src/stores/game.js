@@ -28,6 +28,7 @@ export const useGameStore = defineStore('game', {
           .insert([{
             name: gameData.name,
             date: gameData.date,
+            opponent: gameData.opponent,
             team_stats: gameData.teamStats || {},
             player_stats: gameData.playerStats || []
           }])
@@ -50,6 +51,7 @@ export const useGameStore = defineStore('game', {
           .update({
             name: gameData.name,
             date: gameData.date,
+            opponent: gameData.opponent,
             team_stats: gameData.team_stats,
             player_stats: gameData.player_stats || []
           })

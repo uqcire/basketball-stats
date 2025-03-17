@@ -82,6 +82,7 @@ const teamGameStats = computed(() => {
       id: rawGame.id,
       name: rawGame.name,
       date: rawGame.date,
+      opponent: stats.opponent || '-',
       GR: stats.GR || '-',
       GT: stats.GT || '-',
       FGM: Number(stats.FGM) || 0,

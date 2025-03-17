@@ -26,6 +26,7 @@ const startEditGameInfo = () => {
   editingGameData.value = {
     name: game.value.name,
     date: game.value.date || new Date().toISOString().split('T')[0],
+    opponent: game.value.team_stats?.opponent || '-',
     GR: game.value.team_stats?.GR || '-',
     GT: game.value.team_stats?.GT || '-'
   }
@@ -40,6 +41,7 @@ const saveGameInfo = async () => {
       date: editingGameData.value.date || game.value.date,
       team_stats: {
         ...game.value.team_stats,
+        opponent: editingGameData.value.opponent,
         GR: editingGameData.value.GR,
         GT: editingGameData.value.GT
       },
@@ -338,6 +340,165 @@ const removePlayer = async (playerId) => {
     alert('Error removing player, please try again')
   }
 }
+
+// 在 script setup 部分添加排序相关的状态和方法
+const sortConfig = ref({
+  key: null,
+  direction: 'asc'
+})
+
+// 排序方法
+const sortStats = (key) => {
+  if (sortConfig.value.key === key) {
+    sortConfig.value.direction = sortConfig.value.direction === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortConfig.value.key = key
+    sortConfig.value.direction = 'asc'
+  }
+}
+
+// 获取排序后的球员数据
+const sortedPlayerStats = computed(() => {
+  if (!sortConfig.value.key) return playerStats.value
+
+  return [...playerStats.value].sort((a, b) => {
+    let aValue = a[sortConfig.value.key]
+    let bValue = b[sortConfig.value.key]
+
+    // 特殊处理球员号码
+    if (sortConfig.value.key === 'number') {
+      // 将号码转换为数字，如果转换失败则使用最大值
+      aValue = Number(aValue) || Number.MAX_SAFE_INTEGER
+      bValue = Number(bValue) || Number.MAX_SAFE_INTEGER
+    }
+
+    // 特殊处理复合数据
+    if (sortConfig.value.key === 'FGM/FGA') {
+      aValue = a.FGM / (a.FGA || 1)
+      bValue = b.FGM / (b.FGA || 1)
+    } else if (sortConfig.value.key === '3PM/3PA') {
+      aValue = a.threePM / (a.threePA || 1)
+      bValue = b.threePM / (b.threePA || 1)
+    } else if (sortConfig.value.key === 'FTM/FTA') {
+      aValue = a.FTM / (a.FTA || 1)
+      bValue = b.FTM / (b.FTA || 1)
+    } else if (sortConfig.value.key === 'OREB/DREB') {
+      aValue = a.OREB + a.DREB
+      bValue = b.OREB + b.DREB
+    } else if (sortConfig.value.key === 'PTS') {
+      aValue = calculatePoints(a)
+      bValue = calculatePoints(b)
+    }
+
+    // 确保数字正确排序
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortConfig.value.direction === 'asc' ? aValue - bValue : bValue - aValue
+    }
+
+    // 字符串排序
+    if (aValue < bValue) return sortConfig.value.direction === 'asc' ? -1 : 1
+    if (aValue > bValue) return sortConfig.value.direction === 'asc' ? 1 : -1
+    return 0
+  })
+})
+
+// 获取排序图标
+const getSortIcon = (key) => {
+  if (sortConfig.value.key !== key) return '↕️'
+  return sortConfig.value.direction === 'asc' ? '↑' : '↓'
+}
+
+// 在 script setup 部分添加计时器相关的状态和方法
+const activeTimers = ref({})
+const timerIntervals = ref({})
+
+// 开始计时
+const startTimer = (playerId) => {
+  if (!activeTimers.value[playerId]) {
+    activeTimers.value[playerId] = {
+      minutes: editingStats.value[playerId]?.MIN || 0,
+      seconds: 0,
+      isRunning: true
+    }
+    timerIntervals.value[playerId] = setInterval(() => {
+      if (activeTimers.value[playerId].seconds === 59) {
+        activeTimers.value[playerId].minutes++
+        activeTimers.value[playerId].seconds = 0
+      } else {
+        activeTimers.value[playerId].seconds++
+      }
+    }, 1000)
+  } else if (!activeTimers.value[playerId].isRunning) {
+    // 如果计时器存在但已暂停，重新开始计时
+    activeTimers.value[playerId].isRunning = true
+    timerIntervals.value[playerId] = setInterval(() => {
+      if (activeTimers.value[playerId].seconds === 59) {
+        activeTimers.value[playerId].minutes++
+        activeTimers.value[playerId].seconds = 0
+      } else {
+        activeTimers.value[playerId].seconds++
+      }
+    }, 1000)
+  }
+}
+
+// 暂停计时
+const pauseTimer = (playerId) => {
+  if (activeTimers.value[playerId]) {
+    clearInterval(timerIntervals.value[playerId])
+    activeTimers.value[playerId].isRunning = false
+  }
+}
+
+// 停止计时并保存
+const stopTimer = (playerId) => {
+  if (activeTimers.value[playerId]) {
+    clearInterval(timerIntervals.value[playerId])
+    editingStats.value[playerId].MIN = activeTimers.value[playerId].minutes
+    delete activeTimers.value[playerId]
+    delete timerIntervals.value[playerId]
+  }
+}
+
+// 格式化时间显示
+const formatTime = (minutes, seconds) => {
+  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+}
+
+// 格式化显示时间（用于非编辑状态）
+const formatDisplayTime = (minutes) => {
+  const mins = Math.floor(minutes)
+  const secs = Math.round((minutes - mins) * 60)
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
+
+// 在组件卸载时清理所有计时器
+onUnmounted(() => {
+  Object.keys(timerIntervals.value).forEach(playerId => {
+    clearInterval(timerIntervals.value[playerId])
+  })
+})
+
+// 在 script setup 部分添加暂停所有计时器的功能
+const pauseAllTimers = () => {
+  Object.keys(activeTimers.value).forEach(playerId => {
+    pauseTimer(playerId)
+  })
+}
+
+// 在 script setup 部分添加开始所有计时器的功能
+const startAllTimers = () => {
+  Object.keys(activeTimers.value).forEach(playerId => {
+    startTimer(playerId)
+  })
+}
+
+// 在 script setup 部分添加停止所有计时器的功能
+const stopAllTimers = () => {
+  Object.keys(activeTimers.value).forEach(playerId => {
+    stopTimer(playerId)
+  })
+}
 </script>
 
 <template>
@@ -372,7 +533,7 @@ const removePlayer = async (playerId) => {
                           </div>
                           <div class="divide-y">
                             <label v-for="player in availablePlayers" :key="player.id"
-                              class="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer">
+                              class="flex items-center gap-2 p-2 hover:bg-base-100 cursor-pointer">
                               <input type="checkbox" class="checkbox" :value="player.id" v-model="selectedPlayerIds" />
                               <span>#{{ player.number }} {{ player.name }}</span>
                             </label>
@@ -397,7 +558,7 @@ const removePlayer = async (playerId) => {
               </div>
             </div>
           </div>
-          <button @click="deleteGame" class="btn btn-soft btn-sm">
+          <button @click="deleteGame" class="btn btn-error btn-sm">
             Delete Game
           </button>
         </div>
@@ -407,11 +568,16 @@ const removePlayer = async (playerId) => {
         <div class="flex items-center justify-between gap-4">
           <!-- 比赛名称 -->
           <div class="flex items-center gap-4">
-            <div v-if="!isEditing" class="stat-value">{{ game.name }}</div>
+            <div v-if="!isEditing" class="text-xl font-bold">{{ game.name }}</div>
             <input v-else v-model="editingGameData.name" type="text" placeholder="Game Name"
               class="input input-bordered" />
           </div>
-
+          <!-- 对手名称 -->
+          <div class="flex items-center gap-2">
+            <div v-if="!isEditing" class="text-xl font-bold">{{ game.team_stats?.opponent || '-' }}</div>
+            <input v-else v-model="editingGameData.opponent" type="text" placeholder="Opponent Name"
+              class="input input-bordered" />
+          </div>
           <!-- 比赛结果 -->
           <div class="flex items-center gap-2">
             <div v-if="!isEditing" class="text-xl font-bold">{{ game.team_stats?.GR || '-' }}</div>
@@ -535,72 +701,97 @@ const removePlayer = async (playerId) => {
       </div>
 
       <!-- 球员数据表格 -->
-      <div class="rounded-lg shadow-lg border overflow-hidden">
+      <div class="rounded-lg shadow-lg border overflow-x-auto">
         <div class="flex flex-col gap-4 p-4">
           <div class="flex justify-between items-center mb-6 border-b pb-4">
             <h2 class="text-xl font-bold">Box Score</h2>
             <div class="flex gap-2">
               <template v-if="editingMode">
+                <div class="flex gap-2 mr-4">
+                  <button @click="pauseAllTimers" class="btn btn-warning btn-sm">
+                    ⏸️ Pause All
+                  </button>
+                  <button @click="startAllTimers" class="btn btn-success btn-sm">
+                    ▶️ Start All
+                  </button>
+                  <button @click="stopAllTimers" class="btn btn-error btn-sm">
+                    ⏹️ Stop All
+                  </button>
+                </div>
                 <button @click="saveBatchStats" class="btn btn-primary btn-sm">Save All</button>
                 <button @click="cancelBatchEdit" class="btn btn-soft btn-sm">Cancel</button>
               </template>
               <button v-else @click="startBatchEdit" class="btn btn-primary btn-sm">Edit All</button>
             </div>
           </div>
-          <div class="overflow-hidden rounded-lg shadow-lg">
-            <table class="table-md min-w-full">
+          <div class="overflow-x-auto rounded-lg shadow-lg">
+            <table class="table-md table-pin-cols">
               <thead>
                 <tr>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    Player
+                  <th
+                    class="sticky left-0 bg-base-200 z-10 px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                    @click="sortStats('name')">
+                    Player {{ getSortIcon('name') }}
                   </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    #
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('number')">
+                    # {{ getSortIcon('number') }}
                   </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    PTS
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    MIN
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    FGM/FGA
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    3PM/3PA
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    FTM/FTA
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    OREB/DREB
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    AST
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    STL
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    BLK
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    TOV
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    PF
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('PTS')">
+                    PTS {{ getSortIcon('PTS') }}
+                  </td>
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('MIN')">
+                    MIN {{ getSortIcon('MIN') }}
+                  </td>
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('FGM/FGA')">
+                    FGM/FGA {{ getSortIcon('FGM/FGA') }}
+                  </td>
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('3PM/3PA')">
+                    3PM/3PA {{ getSortIcon('3PM/3PA') }}
+                  </td>
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('FTM/FTA')">
+                    FTM/FTA {{ getSortIcon('FTM/FTA') }}
+                  </td>
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('OREB/DREB')">
+                    OREB/DREB {{ getSortIcon('OREB/DREB') }}
+                  </td>
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('AST')">
+                    AST {{ getSortIcon('AST') }}
+                  </td>
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('STL')">
+                    STL {{ getSortIcon('STL') }}
+                  </td>
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('BLK')">
+                    BLK {{ getSortIcon('BLK') }}
+                  </td>
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('TOV')">
+                    TOV {{ getSortIcon('TOV') }}
+                  </td>
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                    @click="sortStats('PF')">
+                    PF {{ getSortIcon('PF') }}
+                  </td>
+                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600">
                     Action
-                  </th>
+                  </td>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200">
-                <tr v-for="stat in playerStats" :key="stat.playerId" class="hover:bg-gray-50"
+                <tr v-for="stat in sortedPlayerStats" :key="stat.playerId" class="hover:bg-base-100"
                   :class="{ 'bg-blue-50': editingMode }">
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <th class="sticky left-0 bg-base-200 z-10 px-6 py-4 whitespace-nowrap text-start">
                     {{ stat.name }}
-                  </td>
+                  </th>
                   <td class="px-6 py-4 whitespace-nowrap">
                     {{ stat.number }}
                   </td>
@@ -609,11 +800,34 @@ const removePlayer = async (playerId) => {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <template v-if="editingMode">
-                      <input v-model="editingStats[stat.playerId].MIN" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
+                      <div class="flex items-center gap-2">
+                        <template v-if="activeTimers[stat.playerId]">
+                          <span class="font-mono">{{ formatTime(activeTimers[stat.playerId].minutes,
+                            activeTimers[stat.playerId].seconds) }}</span>
+                          <div class="flex gap-1">
+                            <button v-if="activeTimers[stat.playerId].isRunning" @click="pauseTimer(stat.playerId)"
+                              class="btn btn-xs btn-soft">
+                              ⏸️
+                            </button>
+                            <button v-else @click="startTimer(stat.playerId)" class="btn btn-xs btn-soft">
+                              ▶️
+                            </button>
+                            <button @click="stopTimer(stat.playerId)" class="btn btn-xs btn-soft">
+                              ⏹️
+                            </button>
+                          </div>
+                        </template>
+                        <template v-else>
+                          <input v-model="editingStats[stat.playerId].MIN" type="number" min="0" step="0.1"
+                            class="w-16 px-2 py-1 border rounded">
+                          <button @click="startTimer(stat.playerId)" class="btn btn-xs btn-soft">
+                            ▶️
+                          </button>
+                        </template>
+                      </div>
                     </template>
                     <template v-else>
-                      {{ stat.MIN }}
+                      <span class="font-mono">{{ formatDisplayTime(stat.MIN) }}</span>
                     </template>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -724,23 +938,20 @@ const removePlayer = async (playerId) => {
                   <td class="px-6 py-4 whitespace-nowrap">
                     <template v-if="editingMode">
                       <div class="flex gap-2">
-                        <button @click="saveBatchStats"
-                          class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                        <button @click="saveBatchStats" class="btn btn-primary btn-sm">
                           Save
                         </button>
-                        <button @click="cancelBatchEdit" class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">
+                        <button @click="cancelBatchEdit" class="btn btn-soft btn-sm">
                           Cancel
                         </button>
                       </div>
                     </template>
                     <template v-else>
                       <div class="flex gap-2">
-                        <button @click="startBatchEdit"
-                          class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
+                        <button @click="startBatchEdit" class="btn btn-primary btn-sm">
                           Edit
                         </button>
-                        <button @click="removePlayer(stat.playerId)"
-                          class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600">
+                        <button @click="removePlayer(stat.playerId)" class="btn btn-error btn-sm">
                           Remove
                         </button>
                       </div>
@@ -751,11 +962,8 @@ const removePlayer = async (playerId) => {
             </table>
           </div>
         </div>
-
-
       </div>
     </div>
-
   </div>
   <div v-else class="container mx-auto px-4 py-8 text-center">
     <div class="flex flex-col items-center gap-4">

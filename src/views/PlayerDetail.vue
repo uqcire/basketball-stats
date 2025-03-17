@@ -9,9 +9,28 @@ const router = useRouter()
 const playerStore = usePlayerStore()
 const gameStore = useGameStore()
 
+// 确保游戏数据加载
+onMounted(async () => {
+  if (playerStore.players.length === 0) {
+    await playerStore.fetchPlayers()
+  }
+  if (gameStore.games.length === 0) {
+    await gameStore.fetchGames()
+  }
+})
+
 const playerId = computed(() => Number(route.params.id))
 const player = computed(() => playerStore.players.find(p => p.id === playerId.value))
-const playerStats = computed(() => playerStore.getPlayerStats(playerId.value))
+const playerStats = computed(() => {
+  const stats = playerStore.getPlayerStats(playerId.value)
+  return stats.map(stat => {
+    const game = gameStore.games.find(g => g.id === stat.gameId)
+    return {
+      ...stat,
+      opponent: game?.team_stats?.opponent || '-'
+    }
+  })
+})
 const playerAverageStats = computed(() => playerStore.getPlayerAverageStats(playerId.value))
 
 // 编辑状态管理
@@ -53,13 +72,6 @@ const cancelEdit = () => {
   editingNumber.value = ''
 }
 
-// 确保数据加载
-onMounted(async () => {
-  if (playerStore.players.length === 0) {
-    await playerStore.fetchPlayers()
-  }
-})
-
 // 计算命中率
 const calculatePercentage = (made, attempted) => {
   if (!attempted) return 'N/A'
@@ -94,24 +106,20 @@ const deleteGameRecord = async (gameId) => {
   if (!confirm('Are you sure you want to delete this game record? This action cannot be undone.')) return
 
   try {
-    // 先删除比赛记录
-    await gameStore.deleteGame(gameId)
-
-    // 更新球员的统计数据
+    // 从球员的统计数据中移除这场比赛
     const updatedStats = player.value.stats.filter(stat => stat.gameId !== gameId)
+
+    // 更新球员数据
     await playerStore.updatePlayer(player.value.id, {
       ...player.value,
       stats: updatedStats
     })
 
-    // 重新获取数据
-    await Promise.all([
-      gameStore.fetchGames(),
-      playerStore.fetchPlayers()
-    ])
+    // 重新获取球员数据
+    await playerStore.fetchPlayers()
   } catch (error) {
-    console.error('delete game record error:', error)
-    alert('delete game record error, please try again')
+    console.error('delete game record failed:', error)
+    alert('Delete game record failed, please try again')
   }
 }
 
@@ -154,7 +162,7 @@ const deleteGameRecord = async (gameId) => {
           <button @click="startEdit" class="btn btn-primary btn-sm">
             Edit information
           </button>
-          <button @click="deletePlayer" class="btn btn-soft btn-sm">
+          <button @click="deletePlayer" class="btn btn-error btn-sm">
             Delete Player
           </button>
         </div>
@@ -236,6 +244,7 @@ const deleteGameRecord = async (gameId) => {
               <thead>
                 <tr>
                   <th class="px-6 py-3 text-left text-md font-medium text-gray-600">Game</th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">Opponent</th>
                   <th class="px-6 py-3 text-left text-md font-medium text-gray-600">Result</th>
                   <th class="px-6 py-3 text-left text-md font-medium text-gray-600">Type</th>
                   <th class="px-6 py-3 text-left text-md font-medium text-gray-600">MIN</th>
@@ -249,45 +258,64 @@ const deleteGameRecord = async (gameId) => {
                   <th class="px-6 py-3 text-left text-md font-medium text-gray-600">BLK</th>
                   <th class="px-6 py-3 text-left text-md font-medium text-gray-600">TOV</th>
                   <th class="px-6 py-3 text-left text-md font-medium text-gray-600">PF</th>
+                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">Action</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="stat in playerStats" :key="stat.gameId" class="hover:bg-gray-100 cursor-pointer"
-                  @click="router.push(`/game/${stat.gameId}`)">
-                  <td class="px-6 py-4 whitespace-nowrap">{{ stat.name }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap">{{ stat.team_stats?.GR || '-' }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap">{{ stat.team_stats?.GT || '-' }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap">{{ stat.MIN || 0 }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap">{{ calculatePoints(stat) }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                <tr v-for="stat in playerStats" :key="stat.gameId" class="hover:bg-gray-100">
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">
+                    {{ stat.name }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">
+                    {{ stat.opponent }}
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">{{
+                    stat.team_stats?.GR || '-' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">{{
+                    stat.team_stats?.GT || '-' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">{{
+                    stat.MIN || 0 }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">{{
+                    calculatePoints(stat) }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">
                     {{ stat.FGM || 0 }}/{{ stat.FGA || 0 }}
                     <span class="text-gray-500 text-sm">
                       ({{ calculatePercentage(stat.FGM, stat.FGA) }})
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">
                     {{ stat.threePM || 0 }}/{{ stat.threePA || 0 }}
                     <span class="text-gray-500 text-sm">
                       ({{ calculatePercentage(stat.threePM, stat.threePA) }})
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">
                     {{ stat.FTM || 0 }}/{{ stat.FTA || 0 }}
                     <span class="text-gray-500 text-sm">
                       ({{ calculatePercentage(stat.FTM, stat.FTA) }})
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">
                     {{ (stat.OREB || 0) + (stat.DREB || 0) }}
                     <span class="text-gray-500 text-sm">
                       ({{ stat.OREB || 0 }}/{{ stat.DREB || 0 }})
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">{{ stat.AST || 0 }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap">{{ stat.STL || 0 }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap">{{ stat.BLK || 0 }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap">{{ stat.TOV || 0 }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap">{{ stat.PF || 0 }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">{{
+                    stat.AST || 0 }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">{{
+                    stat.STL || 0 }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">{{
+                    stat.BLK || 0 }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">{{
+                    stat.TOV || 0 }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">{{
+                    stat.PF || 0 }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <button @click.stop="deleteGameRecord(stat.gameId)" class="btn btn-error btn-xs">
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               </tbody>
             </table>
