@@ -566,7 +566,7 @@ const stopAllTimers = () => {
         </div>
       </div>
       <!-- 比赛基本信息 -->
-      <div class=" rounded-lg shadow-lg p-6 mb-8">
+      <div class=" rounded-lg shadow-lg p-6 mb-8 border">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <!-- 比赛名称 -->
           <div class="flex items-center gap-4">
@@ -625,7 +625,7 @@ const stopAllTimers = () => {
       </div>
 
       <!-- 球队数据卡片 -->
-      <div class="card rounded-lg shadow p-6">
+      <div class="card rounded-lg shadow p-6 border">
         <h2 class="text-xl font-bold pb-4">Team Statistics</h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="stat rounded-lg shadow-lg">
