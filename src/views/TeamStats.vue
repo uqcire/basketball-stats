@@ -1,5 +1,6 @@
 <script setup>
 import TeamStatsTable from '@/components/TeamStatsTable.vue';
+import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { usePlayerStore } from '@/stores/player';
 import { useTeamStore } from '@/stores/team';
@@ -9,6 +10,7 @@ import { useRouter } from 'vue-router';
 const playerStore = usePlayerStore()
 const teamStore = useTeamStore()
 const gameStore = useGameStore()
+const authStore = useAuthStore()
 const router = useRouter()
 
 const editingGameId = ref(null)
@@ -173,9 +175,13 @@ const calculatePercentage = (made, attempted) => {
 </script>
 
 <template>
-  <div class="container mx-auto">
-    <div class="flex flex-col gap-6 py-6">
-      <!-- 标题和添加按钮 -->
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col gap-4 border rounded-lg shadow-lg p-4">
+      <!-- Header -->
+      <div class="flex justify-between items-center mb-6 border-b pb-4">
+        <h1 class="text-xl font-bold">Team Statistics</h1>
+
+      </div>
 
       <!-- 平均数据卡片 -->
       <div class="p-4 border rounded shadow-lg">
@@ -285,7 +291,7 @@ const calculatePercentage = (made, attempted) => {
         <div class="overflow-hidden border rounded-lg shadow-lg p-4">
           <div class="flex justify-between items-center p-4 border-b">
             <h2 class="text-xl font-bold">Game Statistics ({{ teamGameStats.length }} GP)</h2>
-            <button @click="addNewGame" class="btn btn-primary btn-sm">
+            <button v-if="authStore.isAdmin" @click="addNewGame" class="btn btn-primary btn-sm">
               Add New Game
             </button>
           </div>

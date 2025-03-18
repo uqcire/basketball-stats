@@ -1,10 +1,12 @@
 <script setup>
+import { useAuthStore } from '@/stores/auth';
 import { usePlayerStore } from '@/stores/player';
 import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter()
 const store = usePlayerStore()
+const authStore = useAuthStore()
 const newPlayerName = ref('')
 const newPlayerNumber = ref('')
 const isLoading = ref(false)
@@ -183,7 +185,7 @@ const calculatePercentage = (made, attempted) => {
       <!-- Header -->
       <div class="flex justify-between items-center mb-6 border-b pb-4">
         <h1 class="text-xl font-bold">Player Statistics</h1>
-        <button @click="openAddDialog" class="btn btn-primary">Add New Player</button>
+        <button v-if="authStore.isAdmin" @click="openAddDialog" class="btn btn-primary">Add New Player</button>
       </div>
       <!-- 球员数据表格 -->
       <div class="overflow-hidden rounded-lg shadow-lg">

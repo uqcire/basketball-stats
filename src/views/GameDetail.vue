@@ -1,4 +1,5 @@
 <script setup>
+import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { usePlayerStore } from '@/stores/player'
 import { computed, onMounted, onUnmounted, ref } from 'vue'
@@ -8,6 +9,7 @@ const route = useRoute()
 const router = useRouter()
 const gameStore = useGameStore()
 const playerStore = usePlayerStore()
+const authStore = useAuthStore()
 
 const gameId = computed(() => Number(route.params.id))
 const game = computed(() => gameStore.getGameById(gameId.value))
@@ -510,7 +512,7 @@ const stopAllTimers = () => {
           ← Team
         </button>
         <div class="flex gap-2">
-          <div class="relative" ref="dropdownRef">
+          <div v-if="authStore.isAdmin" class="relative" ref="dropdownRef">
             <button @click.stop="showAddPlayer = !showAddPlayer" class="btn btn-primary btn-sm">
               Add Player
             </button>
@@ -558,7 +560,7 @@ const stopAllTimers = () => {
               </div>
             </div>
           </div>
-          <button @click="deleteGame" class="btn btn-error btn-sm">
+          <button v-if="authStore.isAdmin" @click="deleteGame" class="btn btn-error btn-sm">
             Delete Game
           </button>
         </div>
@@ -612,7 +614,7 @@ const stopAllTimers = () => {
           </div>
 
           <!-- 编辑按钮 -->
-          <div class="flex items-center gap-2">
+          <div v-if="authStore.isAdmin" class="flex items-center gap-2">
             <template v-if="isEditing">
               <button @click="saveGameInfo" class="btn btn-primary btn-sm">Save</button>
               <button @click="cancelEdit" class="btn btn-soft btn-sm">Cancel</button>
@@ -705,7 +707,7 @@ const stopAllTimers = () => {
         <div class="flex flex-col gap-4 p-4">
           <div class="flex justify-between items-center mb-6 border-b pb-4">
             <h2 class="text-xl font-bold">Box Score</h2>
-            <div class="flex gap-2">
+            <div v-if="authStore.isAdmin" class="flex gap-2">
               <template v-if="editingMode">
                 <div class="flex gap-2 mr-4">
                   <button @click="pauseAllTimers" class="btn btn-warning btn-sm">
@@ -781,7 +783,7 @@ const stopAllTimers = () => {
                     @click="sortStats('PF')">
                     PF {{ getSortIcon('PF') }}
                   </td>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                  <td v-if="authStore.isAdmin" class="px-6 py-3 text-left text-md font-medium text-gray-600">
                     Action
                   </td>
                 </tr>
@@ -935,7 +937,7 @@ const stopAllTimers = () => {
                       {{ stat.PF }}
                     </template>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td v-if="authStore.isAdmin" class="px-6 py-4 whitespace-nowrap">
                     <template v-if="editingMode">
                       <div class="flex gap-2">
                         <button @click="saveBatchStats" class="btn btn-primary btn-sm">

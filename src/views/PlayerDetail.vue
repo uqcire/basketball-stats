@@ -1,4 +1,5 @@
 <script setup>
+import { useAuthStore } from '@/stores/auth';
 import { useGameStore } from '@/stores/game';
 import { usePlayerStore } from '@/stores/player';
 import { computed, onMounted, ref } from 'vue';
@@ -8,6 +9,7 @@ const route = useRoute()
 const router = useRouter()
 const playerStore = usePlayerStore()
 const gameStore = useGameStore()
+const authStore = useAuthStore()
 
 // 确保游戏数据加载
 onMounted(async () => {
@@ -158,7 +160,7 @@ const deleteGameRecord = async (gameId) => {
             </button>
           </div>
         </div>
-        <div class="flex gap-2">
+        <div v-if="authStore.isAdmin" class="flex gap-2">
           <button @click="startEdit" class="btn btn-primary btn-sm">
             Edit information
           </button>
@@ -166,7 +168,6 @@ const deleteGameRecord = async (gameId) => {
             Delete Player
           </button>
         </div>
-
       </div>
       <!-- 数据展示 -->
       <div class="flex flex-col gap-4">
@@ -258,7 +259,7 @@ const deleteGameRecord = async (gameId) => {
                   <th class="px-6 py-3 text-left text-md font-medium text-gray-600">BLK</th>
                   <th class="px-6 py-3 text-left text-md font-medium text-gray-600">TOV</th>
                   <th class="px-6 py-3 text-left text-md font-medium text-gray-600">PF</th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600">Action</th>
+                  <th v-if="authStore.isAdmin" class="px-6 py-3 text-left text-md font-medium text-gray-600">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -312,7 +313,8 @@ const deleteGameRecord = async (gameId) => {
                   <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">{{
                     stat.PF || 0 }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <button @click.stop="deleteGameRecord(stat.gameId)" class="btn btn-error btn-xs">
+                    <button v-if="authStore.isAdmin" @click.stop="deleteGameRecord(stat.gameId)"
+                      class="btn btn-error btn-xs">
                       Delete
                     </button>
                   </td>
