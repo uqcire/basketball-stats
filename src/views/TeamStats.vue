@@ -174,65 +174,66 @@ const calculatePercentage = (made, attempted) => {
 
 <template>
   <div class="container mx-auto">
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6 py-6">
       <!-- 标题和添加按钮 -->
-
-      <!-- Glossary -->
-      <div class="overflow-x-auto overflow-y-auto">
-        <table class="table-sm text-left font-bold">
-          <!-- head -->
-          <thead>
-            <tr>
-              <th>Glossary</th>
-            </tr>
-          </thead>
-          <!-- body -->
-          <tbody>
-            <!-- row 1 -->
-            <tr>
-              <th>GP - Game Played</th>
-              <th>GR - Game Result</th>
-              <th>GT - Game Type</th>
-              <th>PTS - Points</th>
-              <th>FG - Field Goal</th>
-              <th>FGM - Field Goal Made</th>
-
-            </tr>
-            <!-- row 2 -->
-            <tr>
-              <th>FGA - Field Goal Attempted</th>
-              <th>FG% - Field Goal Percentage</th>
-              <th>3P - Three-Point Field Goal</th>
-              <th>3PM - Three-Point Field Goal Made</th>
-              <th>3PA - Three-Point Field Goal Attempted</th>
-              <th>3P% - Three-Point Field Goal Percentage</th>
-
-            </tr>
-            <!-- row 3 -->
-            <tr>
-              <th>FT - Free Throw</th>
-              <th>FTM - Free Throw Made</th>
-              <th>FTA - Free Throw Attempted</th>
-              <th>FT% - Free Throw Percentage</th>
-              <th>OREB - Offensive Rebound</th>
-              <th>DREB - Defensive Rebound</th>
-
-            </tr>
-            <!-- row 4 -->
-            <tr>
-              <th>REB - Rebound</th>
-              <th>AST - Assist</th>
-              <th>STL - Steal</th>
-              <th>BLK - Block</th>
-              <th>TOV - Turnover</th>
-              <th>PF - Personal Fouls</th>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
       <!-- 平均数据卡片 -->
       <div class="p-4 border rounded shadow-lg">
+        <!-- Glossary -->
+        <div class="overflow-x-auto overflow-y-auto">
+          <div class="collapse ">
+            <input type="checkbox" />
+            <div class="collapse-title">
+              <button class="btn btn-soft btn-sm">
+                Glossary
+              </button>
+            </div>
+            <div class="collapse-content">
+              <table class="table-sm text-left font-bold">
+                <!-- head -->
+                <!-- body -->
+                <tbody>
+                  <!-- row 1 -->
+                  <tr>
+                    <th>GP - Game Played</th>
+                    <th>GR - Game Result</th>
+                    <th>GT - Game Type</th>
+                    <th>PTS - Points</th>
+                    <th>FG - Field Goal</th>
+                    <th>FGM - Field Goal Made</th>
+                  </tr>
+                  <!-- row 2 -->
+                  <tr>
+                    <th>FGA - Field Goal Attempted</th>
+                    <th>FG% - Field Goal Percentage</th>
+                    <th>3P - Three-Point Field Goal</th>
+                    <th>3PM - Three-Point Field Goal Made</th>
+                    <th>3PA - Three-Point Field Goal Attempted</th>
+                    <th>3P% - Three-Point Field Goal Percentage</th>
+                  </tr>
+                  <!-- row 3 -->
+                  <tr>
+                    <th>FT - Free Throw</th>
+                    <th>FTM - Free Throw Made</th>
+                    <th>FTA - Free Throw Attempted</th>
+                    <th>FT% - Free Throw Percentage</th>
+                    <th>OREB - Offensive Rebound</th>
+                    <th>DREB - Defensive Rebound</th>
+                  </tr>
+                  <!-- row 4 -->
+                  <tr>
+                    <th>REB - Rebound</th>
+                    <th>AST - Assist</th>
+                    <th>STL - Steal</th>
+                    <th>BLK - Block</th>
+                    <th>TOV - Turnover</th>
+                    <th>PF - Personal Fouls</th>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
         <h3 class="text-xl font-bold">Team Average Statistics</h3>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div class="stat rounded-lg shadow-lg">

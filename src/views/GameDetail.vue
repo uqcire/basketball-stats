@@ -565,7 +565,7 @@ const stopAllTimers = () => {
       </div>
       <!-- 比赛基本信息 -->
       <div class=" rounded-lg shadow-lg p-6 mb-8">
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <!-- 比赛名称 -->
           <div class="flex items-center gap-4">
             <div v-if="!isEditing" class="text-xl font-bold">{{ game.name }}</div>

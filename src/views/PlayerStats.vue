@@ -1,6 +1,6 @@
 <script setup>
 import { usePlayerStore } from '@/stores/player';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter()
@@ -10,6 +10,98 @@ const newPlayerNumber = ref('')
 const isLoading = ref(false)
 const errorMessage = ref('')
 const showAddDialog = ref(false)
+
+// 添加排序配置
+const sortConfig = ref({
+  key: null,
+  direction: 'asc'
+})
+
+// 添加排序方法
+const sortStats = (key) => {
+  if (sortConfig.value.key === key) {
+    sortConfig.value.direction = sortConfig.value.direction === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortConfig.value.key = key
+    sortConfig.value.direction = 'asc'
+  }
+}
+
+// 获取排序图标
+const getSortIcon = (key) => {
+  if (sortConfig.value.key !== key) return '↕️'
+  return sortConfig.value.direction === 'asc' ? '↑' : '↓'
+}
+
+// 获取排序后的球员数据
+const sortedPlayers = computed(() => {
+  if (!sortConfig.value.key) return store.players
+
+  return [...store.players].sort((a, b) => {
+    let aValue, bValue
+
+    // 特殊处理不同类型的数据
+    switch (sortConfig.value.key) {
+      case 'name':
+        aValue = a.name
+        bValue = b.name
+        break
+      case 'number':
+        aValue = Number(a.number) || Number.MAX_SAFE_INTEGER
+        bValue = Number(b.number) || Number.MAX_SAFE_INTEGER
+        break
+      case 'GP':
+        aValue = getPlayerStats(a.id).length
+        bValue = getPlayerStats(b.id).length
+        break
+      case 'MIN':
+        aValue = getPlayerAverageStats(a.id)?.MIN || 0
+        bValue = getPlayerAverageStats(b.id)?.MIN || 0
+        break
+      case 'AP':
+        aValue = getPlayerAverageStats(a.id)?.PTS || 0
+        bValue = getPlayerAverageStats(b.id)?.PTS || 0
+        break
+      case 'FG%':
+        const aStats = getPlayerAverageStats(a.id)
+        const bStats = getPlayerAverageStats(b.id)
+        aValue = aStats?.FGM / (aStats?.FGA || 1) || 0
+        bValue = bStats?.FGM / (bStats?.FGA || 1) || 0
+        break
+      case '3P%':
+        const aStats3P = getPlayerAverageStats(a.id)
+        const bStats3P = getPlayerAverageStats(b.id)
+        aValue = aStats3P?.threePM / (aStats3P?.threePA || 1) || 0
+        bValue = bStats3P?.threePM / (bStats3P?.threePA || 1) || 0
+        break
+      case 'FT%':
+        const aStatsFT = getPlayerAverageStats(a.id)
+        const bStatsFT = getPlayerAverageStats(b.id)
+        aValue = aStatsFT?.FTM / (aStatsFT?.FTA || 1) || 0
+        bValue = bStatsFT?.FTM / (bStatsFT?.FTA || 1) || 0
+        break
+      case 'REB':
+        const aStatsREB = getPlayerAverageStats(a.id)
+        const bStatsREB = getPlayerAverageStats(b.id)
+        aValue = (aStatsREB?.OREB || 0) + (aStatsREB?.DREB || 0)
+        bValue = (bStatsREB?.OREB || 0) + (bStatsREB?.DREB || 0)
+        break
+      default:
+        aValue = getPlayerAverageStats(a.id)?.[sortConfig.value.key] || 0
+        bValue = getPlayerAverageStats(b.id)?.[sortConfig.value.key] || 0
+    }
+
+    // 确保数字正确排序
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortConfig.value.direction === 'asc' ? aValue - bValue : bValue - aValue
+    }
+
+    // 字符串排序
+    if (aValue < bValue) return sortConfig.value.direction === 'asc' ? -1 : 1
+    if (aValue > bValue) return sortConfig.value.direction === 'asc' ? 1 : -1
+    return 0
+  })
+})
 
 // 确保数据加载
 onMounted(async () => {
@@ -99,27 +191,57 @@ const calculatePercentage = (made, attempted) => {
           <table class="min-w-full table-md">
             <thead>
               <tr>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">Player</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">Number</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">GP</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">MIN</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">AP</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">FG%</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">3P%</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">FT%</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">REB</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">AST</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">STL</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">BLK</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">TOV</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600">PF</th>
+                <th
+                  class="sticky left-0 bg-base-200 z-10 px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('name')">
+                  Player {{ getSortIcon('name') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('number')">
+                  Number {{ getSortIcon('number') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('GP')">
+                  GP {{ getSortIcon('GP') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('MIN')">
+                  MIN {{ getSortIcon('MIN') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('AP')">
+                  AP {{ getSortIcon('AP') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('FG%')">
+                  FG% {{ getSortIcon('FG%') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('3P%')">
+                  3P% {{ getSortIcon('3P%') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('FT%')">
+                  FT% {{ getSortIcon('FT%') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('REB')">
+                  REB {{ getSortIcon('REB') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('AST')">
+                  AST {{ getSortIcon('AST') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('STL')">
+                  STL {{ getSortIcon('STL') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('BLK')">
+                  BLK {{ getSortIcon('BLK') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('TOV')">
+                  TOV {{ getSortIcon('TOV') }}</th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  @click="sortStats('PF')">
+                  PF {{ getSortIcon('PF') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="player in store.players" :key="player.id" class="hover:bg-gray-100 cursor-pointer"
+              <tr v-for="player in sortedPlayers" :key="player.id" class="hover:bg-gray-100 cursor-pointer"
                 @click="router.push(`/players/${player.id}`)">
                 <!-- Player Name -->
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td
+                  class="sticky left-0 bg-base-200 z-10 px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer">
                   <div>{{ player.name }}</div>
                 </td>
                 <!-- Player Number -->
@@ -137,7 +259,7 @@ const calculatePercentage = (made, attempted) => {
                 </td>
                 <!-- AP -->
                 <td class="px-6 py-4 whitespace-nowrap">
-                  <div>{{ getPlayerAverageStats(player.id)?.AP?.toFixed(1) || '0.0' }}
+                  <div>{{ getPlayerAverageStats(player.id)?.PTS?.toFixed(1) || '0.0' }}
                   </div>
                 </td>
                 <!-- FG% -->
