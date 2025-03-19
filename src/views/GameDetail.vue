@@ -624,346 +624,396 @@ const stopAllTimers = () => {
         </div>
       </div>
 
-      <!-- 球队数据卡片 -->
-      <div class="card rounded-lg shadow p-6 border">
-        <h2 class="text-xl font-bold pb-4">Team Statistics</h2>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">PTS</div>
-            <div class="stat-value">
-              {{ calculateTeamPoints(teamStats) }}
-            </div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">FG</div>
-            <div class="stat-value">
-              {{ teamStats.FGM || 0 }}/{{ teamStats.FGA || 0 }}
-              <span class="text-gray-500 text-sm">
-                ({{ calculatePercentage(teamStats.FGM, teamStats.FGA) }})
-              </span>
-            </div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">3P</div>
-            <div class="stat-value">
-              {{ teamStats.threePM || 0 }}/{{ teamStats.threePA || 0 }}
-              <span class="text-gray-500 text-sm">
-                ({{ calculatePercentage(teamStats.threePM, teamStats.threePA) }})
-              </span>
-            </div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">FT</div>
-            <div class="stat-value">
-              {{ teamStats.FTM || 0 }}/{{ teamStats.FTA || 0 }}
-              <span class="text-gray-500 text-sm">
-                ({{ calculatePercentage(teamStats.FTM, teamStats.FTA) }})
-              </span>
-            </div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">OREB</div>
-            <div class="stat-value">{{ teamStats.OREB || 0 }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">DREB</div>
-            <div class="stat-value">{{ teamStats.DREB || 0 }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">REB</div>
-            <div class="stat-value">
-              {{ (teamStats.OREB || 0) + (teamStats.DREB || 0) }}
-              <span class="text-gray-500 text-sm">
-                ({{ teamStats.OREB || 0 }}/{{ teamStats.DREB || 0 }})
-              </span>
-            </div>
-          </div>
+      <div class="tabs tabs-border">
+        <!-- 球队数据卡片 Team Statistics-->
+        <input type="radio" name="my_tabs_2" class="tab" aria-label="Team Statistics" checked="checked" />
+        <div class="tab-content">
+          <div class="p-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">PTS</div>
+                <div class="stat-value">
+                  {{ calculateTeamPoints(teamStats) }}
+                </div>
+              </div>
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">FG</div>
+                <div class="stat-value">
+                  {{ teamStats.FGM || 0 }}/{{ teamStats.FGA || 0 }}
+                  <span class="text-gray-500 text-sm">
+                    ({{ calculatePercentage(teamStats.FGM, teamStats.FGA) }})
+                  </span>
+                </div>
+              </div>
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">3P</div>
+                <div class="stat-value">
+                  {{ teamStats.threePM || 0 }}/{{ teamStats.threePA || 0 }}
+                  <span class="text-gray-500 text-sm">
+                    ({{ calculatePercentage(teamStats.threePM, teamStats.threePA) }})
+                  </span>
+                </div>
+              </div>
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">FT</div>
+                <div class="stat-value">
+                  {{ teamStats.FTM || 0 }}/{{ teamStats.FTA || 0 }}
+                  <span class="text-gray-500 text-sm">
+                    ({{ calculatePercentage(teamStats.FTM, teamStats.FTA) }})
+                  </span>
+                </div>
+              </div>
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">OREB</div>
+                <div class="stat-value">{{ teamStats.OREB || 0 }}</div>
+              </div>
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">DREB</div>
+                <div class="stat-value">{{ teamStats.DREB || 0 }}</div>
+              </div>
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">REB</div>
+                <div class="stat-value">
+                  {{ (teamStats.OREB || 0) + (teamStats.DREB || 0) }}
+                  <span class="text-gray-500 text-sm">
+                    ({{ teamStats.OREB || 0 }}/{{ teamStats.DREB || 0 }})
+                  </span>
+                </div>
+              </div>
 
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">AST</div>
-            <div class="stat-value">{{ teamStats.AST || 0 }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">STL</div>
-            <div class="stat-value">{{ teamStats.STL || 0 }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">BLK</div>
-            <div class="stat-value">{{ teamStats.BLK || 0 }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">TOV</div>
-            <div class="stat-value">{{ teamStats.TOV || 0 }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">PF</div>
-            <div class="stat-value">{{ teamStats.PF || 0 }}</div>
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">AST</div>
+                <div class="stat-value">{{ teamStats.AST || 0 }}</div>
+              </div>
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">STL</div>
+                <div class="stat-value">{{ teamStats.STL || 0 }}</div>
+              </div>
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">BLK</div>
+                <div class="stat-value">{{ teamStats.BLK || 0 }}</div>
+              </div>
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">TOV</div>
+                <div class="stat-value">{{ teamStats.TOV || 0 }}</div>
+              </div>
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">PF</div>
+                <div class="stat-value">{{ teamStats.PF || 0 }}</div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- 球员数据表格 -->
-      <div class="rounded-lg shadow-lg border overflow-x-auto">
-        <div class="flex flex-col gap-4 p-4">
-          <div class="flex justify-between items-center mb-6 border-b pb-4">
-            <h2 class="text-xl font-bold">Box Score</h2>
-            <div v-if="authStore.isAdmin" class="flex gap-2">
-              <template v-if="editingMode">
-                <div class="flex gap-2 mr-4">
-                  <button @click="pauseAllTimers" class="btn btn-warning btn-sm">
-                    ⏸️ Pause All
-                  </button>
-                  <button @click="startAllTimers" class="btn btn-success btn-sm">
-                    ▶️ Start All
-                  </button>
-                  <button @click="stopAllTimers" class="btn btn-error btn-sm">
-                    ⏹️ Stop All
-                  </button>
+        <!-- 球员数据表格 Box Score -->
+        <input type="radio" name="my_tabs_2" class="tab" aria-label="Box Score" />
+        <div class="tab-content">
+          <div class="overflow-x-auto p-6">
+            <div class="flex flex-col gap-4">
+              <div class="flex justify-between items-center">
+                <div v-if="authStore.isAdmin" class="flex gap-2">
+                  <template v-if="editingMode">
+                    <div class="flex gap-2 mr-4">
+                      <button @click="pauseAllTimers" class="btn btn-warning btn-sm">
+                        ⏸️ Pause All
+                      </button>
+                      <button @click="startAllTimers" class="btn btn-success btn-sm">
+                        ▶️ Start All
+                      </button>
+                      <button @click="stopAllTimers" class="btn btn-error btn-sm">
+                        ⏹️ Stop All
+                      </button>
+                    </div>
+                    <button @click="saveBatchStats" class="btn btn-primary btn-sm">Save All</button>
+                    <button @click="cancelBatchEdit" class="btn btn-soft btn-sm">Cancel</button>
+                  </template>
+                  <button v-else @click="startBatchEdit" class="btn btn-primary btn-sm">Edit All</button>
                 </div>
-                <button @click="saveBatchStats" class="btn btn-primary btn-sm">Save All</button>
-                <button @click="cancelBatchEdit" class="btn btn-soft btn-sm">Cancel</button>
-              </template>
-              <button v-else @click="startBatchEdit" class="btn btn-primary btn-sm">Edit All</button>
-            </div>
-          </div>
-          <div class="overflow-x-auto rounded-lg shadow-lg">
-            <table class="table-md table-pin-cols">
-              <thead>
-                <tr>
-                  <th
-                    class="sticky left-0 bg-base-200 z-10 px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
-                    @click="sortStats('name')">
-                    Player {{ getSortIcon('name') }}
-                  </th>
-                  <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('number')">
-                    # {{ getSortIcon('number') }}
-                  </th>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('PTS')">
-                    PTS {{ getSortIcon('PTS') }}
-                  </td>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('MIN')">
-                    MIN {{ getSortIcon('MIN') }}
-                  </td>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('FGM/FGA')">
-                    FGM/FGA {{ getSortIcon('FGM/FGA') }}
-                  </td>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('3PM/3PA')">
-                    3PM/3PA {{ getSortIcon('3PM/3PA') }}
-                  </td>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('FTM/FTA')">
-                    FTM/FTA {{ getSortIcon('FTM/FTA') }}
-                  </td>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('OREB/DREB')">
-                    OREB/DREB {{ getSortIcon('OREB/DREB') }}
-                  </td>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('AST')">
-                    AST {{ getSortIcon('AST') }}
-                  </td>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('STL')">
-                    STL {{ getSortIcon('STL') }}
-                  </td>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('BLK')">
-                    BLK {{ getSortIcon('BLK') }}
-                  </td>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('TOV')">
-                    TOV {{ getSortIcon('TOV') }}
-                  </td>
-                  <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
-                    @click="sortStats('PF')">
-                    PF {{ getSortIcon('PF') }}
-                  </td>
-                  <td v-if="authStore.isAdmin" class="px-6 py-3 text-left text-md font-medium text-gray-600">
-                    Action
-                  </td>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200">
-                <tr v-for="stat in sortedPlayerStats" :key="stat.playerId" class="hover:bg-base-100"
-                  :class="{ 'bg-blue-50': editingMode }">
-                  <th class="sticky left-0 bg-base-200 z-10 px-6 py-4 whitespace-nowrap text-start">
-                    {{ stat.name }}
-                  </th>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    {{ stat.number }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap font-semibold">
-                    {{ calculatePoints(stat) }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <template v-if="editingMode">
-                      <div class="flex items-center gap-2">
-                        <template v-if="activeTimers[stat.playerId]">
-                          <span class="font-mono">{{ formatTime(activeTimers[stat.playerId].minutes,
-                            activeTimers[stat.playerId].seconds) }}</span>
-                          <div class="flex gap-1">
-                            <button v-if="activeTimers[stat.playerId].isRunning" @click="pauseTimer(stat.playerId)"
-                              class="btn btn-xs btn-soft">
-                              ⏸️
+              </div>
+              <div class="overflow-x-auto rounded-lg shadow-lg">
+                <table class="table-md table-pin-cols">
+                  <thead>
+                    <tr>
+                      <th
+                        class="sticky left-0 bg-base-200 z-10 px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                        @click="sortStats('name')">
+                        Player {{ getSortIcon('name') }}
+                      </th>
+                      <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('number')">
+                        # {{ getSortIcon('number') }}
+                      </th>
+                      <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('PTS')">
+                        PTS {{ getSortIcon('PTS') }}
+                      </td>
+                      <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('MIN')">
+                        MIN {{ getSortIcon('MIN') }}
+                      </td>
+                      <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('FGM/FGA')">
+                        FGM/FGA {{ getSortIcon('FGM/FGA') }}
+                      </td>
+                      <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('3PM/3PA')">
+                        3PM/3PA {{ getSortIcon('3PM/3PA') }}
+                      </td>
+                      <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('FTM/FTA')">
+                        FTM/FTA {{ getSortIcon('FTM/FTA') }}
+                      </td>
+                      <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('OREB/DREB')">
+                        OREB/DREB {{ getSortIcon('OREB/DREB') }}
+                      </td>
+                      <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('AST')">
+                        AST {{ getSortIcon('AST') }}
+                      </td>
+                      <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('STL')">
+                        STL {{ getSortIcon('STL') }}
+                      </td>
+                      <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('BLK')">
+                        BLK {{ getSortIcon('BLK') }}
+                      </td>
+                      <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('TOV')">
+                        TOV {{ getSortIcon('TOV') }}
+                      </td>
+                      <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
+                        @click="sortStats('PF')">
+                        PF {{ getSortIcon('PF') }}
+                      </td>
+                      <td v-if="authStore.isAdmin" class="px-6 py-3 text-left text-md font-medium text-gray-600">
+                        Action
+                      </td>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-200">
+                    <tr v-for="stat in sortedPlayerStats" :key="stat.playerId" class="hover:bg-base-100"
+                      :class="{ 'bg-blue-50': editingMode }">
+                      <th class="sticky left-0 bg-base-200 z-10 px-6 py-4 whitespace-nowrap text-start">
+                        {{ stat.name }}
+                      </th>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {{ stat.number }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap font-semibold">
+                        {{ calculatePoints(stat) }}
+                      </td>
+                      <td class="px-6 py-2 whitespace-nowrap">
+                        <template v-if="editingMode">
+                          <div class="flex items-center gap-2">
+                            <template v-if="activeTimers[stat.playerId]">
+                              <span class="font-mono">{{ formatTime(activeTimers[stat.playerId].minutes,
+                                activeTimers[stat.playerId].seconds) }}</span>
+                              <div class="flex gap-1">
+                                <button v-if="activeTimers[stat.playerId].isRunning" @click="pauseTimer(stat.playerId)"
+                                  class="btn btn-xs btn-soft">
+                                  ⏸️
+                                </button>
+                                <button v-else @click="startTimer(stat.playerId)" class="btn btn-xs btn-soft">
+                                  ▶️
+                                </button>
+                                <button @click="stopTimer(stat.playerId)" class="btn btn-xs btn-soft">
+                                  ⏹️
+                                </button>
+                              </div>
+                            </template>
+                            <template v-else>
+                              <input v-model="editingStats[stat.playerId].MIN" type="number" min="0" step="0.1"
+                                class="w-16 px-2 py-1 border rounded">
+                              <button @click="startTimer(stat.playerId)" class="btn btn-xs btn-soft">
+                                ▶️
+                              </button>
+                            </template>
+                          </div>
+                        </template>
+                        <template v-else>
+                          <span class="font-mono">{{ formatDisplayTime(stat.MIN) }}</span>
+                        </template>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <template v-if="editingMode">
+                          <input v-model="editingStats[stat.playerId].FGM" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                          /
+                          <input v-model="editingStats[stat.playerId].FGA" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                        </template>
+                        <template v-else>
+                          {{ stat.FGM }}/{{ stat.FGA }}
+                          <span class="text-gray-500 text-sm">
+                            ({{ calculatePercentage(stat.FGM, stat.FGA) }})
+                          </span>
+                        </template>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <template v-if="editingMode">
+                          <input v-model="editingStats[stat.playerId].threePM" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                          /
+                          <input v-model="editingStats[stat.playerId].threePA" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                        </template>
+                        <template v-else>
+                          {{ stat.threePM }}/{{ stat.threePA }}
+                          <span class="text-gray-500 text-sm">
+                            ({{ calculatePercentage(stat.threePM, stat.threePA) }})
+                          </span>
+                        </template>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <template v-if="editingMode">
+                          <input v-model="editingStats[stat.playerId].FTM" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                          /
+                          <input v-model="editingStats[stat.playerId].FTA" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                        </template>
+                        <template v-else>
+                          {{ stat.FTM }}/{{ stat.FTA }}
+                          <span class="text-gray-500 text-sm">
+                            ({{ calculatePercentage(stat.FTM, stat.FTA) }})
+                          </span>
+                        </template>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <template v-if="editingMode">
+                          <input v-model="editingStats[stat.playerId].OREB" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                          /
+                          <input v-model="editingStats[stat.playerId].DREB" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                        </template>
+                        <template v-else>
+                          {{ stat.OREB + stat.DREB }}
+                          <span class="text-gray-500 text-sm">
+                            ({{ stat.OREB }}/{{ stat.DREB }})
+                          </span>
+                        </template>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <template v-if="editingMode">
+                          <input v-model="editingStats[stat.playerId].AST" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                        </template>
+                        <template v-else>
+                          {{ stat.AST }}
+                        </template>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <template v-if="editingMode">
+                          <input v-model="editingStats[stat.playerId].STL" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                        </template>
+                        <template v-else>
+                          {{ stat.STL }}
+                        </template>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <template v-if="editingMode">
+                          <input v-model="editingStats[stat.playerId].BLK" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                        </template>
+                        <template v-else>
+                          {{ stat.BLK }}
+                        </template>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <template v-if="editingMode">
+                          <input v-model="editingStats[stat.playerId].TOV" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                        </template>
+                        <template v-else>
+                          {{ stat.TOV }}
+                        </template>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <template v-if="editingMode">
+                          <input v-model="editingStats[stat.playerId].PF" type="number" min="0"
+                            class="w-16 px-2 py-1 border rounded">
+                        </template>
+                        <template v-else>
+                          {{ stat.PF }}
+                        </template>
+                      </td>
+                      <td v-if="authStore.isAdmin" class="px-6 py-4 whitespace-nowrap">
+                        <template v-if="editingMode">
+                          <div class="flex gap-2">
+                            <button @click="saveBatchStats" class="btn btn-primary btn-sm">
+                              Save
                             </button>
-                            <button v-else @click="startTimer(stat.playerId)" class="btn btn-xs btn-soft">
-                              ▶️
-                            </button>
-                            <button @click="stopTimer(stat.playerId)" class="btn btn-xs btn-soft">
-                              ⏹️
+                            <button @click="cancelBatchEdit" class="btn btn-soft btn-sm">
+                              Cancel
                             </button>
                           </div>
                         </template>
                         <template v-else>
-                          <input v-model="editingStats[stat.playerId].MIN" type="number" min="0" step="0.1"
-                            class="w-16 px-2 py-1 border rounded">
-                          <button @click="startTimer(stat.playerId)" class="btn btn-xs btn-soft">
-                            ▶️
-                          </button>
+                          <div class="flex gap-2">
+                            <button @click="startBatchEdit" class="btn btn-primary btn-sm">
+                              Edit
+                            </button>
+                            <button @click="removePlayer(stat.playerId)" class="btn btn-error btn-sm">
+                              Remove
+                            </button>
+                          </div>
                         </template>
-                      </div>
-                    </template>
-                    <template v-else>
-                      <span class="font-mono">{{ formatDisplayTime(stat.MIN) }}</span>
-                    </template>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <template v-if="editingMode">
-                      <input v-model="editingStats[stat.playerId].FGM" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                      /
-                      <input v-model="editingStats[stat.playerId].FGA" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                    </template>
-                    <template v-else>
-                      {{ stat.FGM }}/{{ stat.FGA }}
-                      <span class="text-gray-500 text-sm">
-                        ({{ calculatePercentage(stat.FGM, stat.FGA) }})
-                      </span>
-                    </template>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <template v-if="editingMode">
-                      <input v-model="editingStats[stat.playerId].threePM" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                      /
-                      <input v-model="editingStats[stat.playerId].threePA" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                    </template>
-                    <template v-else>
-                      {{ stat.threePM }}/{{ stat.threePA }}
-                      <span class="text-gray-500 text-sm">
-                        ({{ calculatePercentage(stat.threePM, stat.threePA) }})
-                      </span>
-                    </template>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <template v-if="editingMode">
-                      <input v-model="editingStats[stat.playerId].FTM" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                      /
-                      <input v-model="editingStats[stat.playerId].FTA" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                    </template>
-                    <template v-else>
-                      {{ stat.FTM }}/{{ stat.FTA }}
-                      <span class="text-gray-500 text-sm">
-                        ({{ calculatePercentage(stat.FTM, stat.FTA) }})
-                      </span>
-                    </template>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <template v-if="editingMode">
-                      <input v-model="editingStats[stat.playerId].OREB" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                      /
-                      <input v-model="editingStats[stat.playerId].DREB" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                    </template>
-                    <template v-else>
-                      {{ stat.OREB + stat.DREB }}
-                      <span class="text-gray-500 text-sm">
-                        ({{ stat.OREB }}/{{ stat.DREB }})
-                      </span>
-                    </template>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <template v-if="editingMode">
-                      <input v-model="editingStats[stat.playerId].AST" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                    </template>
-                    <template v-else>
-                      {{ stat.AST }}
-                    </template>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <template v-if="editingMode">
-                      <input v-model="editingStats[stat.playerId].STL" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                    </template>
-                    <template v-else>
-                      {{ stat.STL }}
-                    </template>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <template v-if="editingMode">
-                      <input v-model="editingStats[stat.playerId].BLK" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                    </template>
-                    <template v-else>
-                      {{ stat.BLK }}
-                    </template>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <template v-if="editingMode">
-                      <input v-model="editingStats[stat.playerId].TOV" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                    </template>
-                    <template v-else>
-                      {{ stat.TOV }}
-                    </template>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <template v-if="editingMode">
-                      <input v-model="editingStats[stat.playerId].PF" type="number" min="0"
-                        class="w-16 px-2 py-1 border rounded">
-                    </template>
-                    <template v-else>
-                      {{ stat.PF }}
-                    </template>
-                  </td>
-                  <td v-if="authStore.isAdmin" class="px-6 py-4 whitespace-nowrap">
-                    <template v-if="editingMode">
-                      <div class="flex gap-2">
-                        <button @click="saveBatchStats" class="btn btn-primary btn-sm">
-                          Save
-                        </button>
-                        <button @click="cancelBatchEdit" class="btn btn-soft btn-sm">
-                          Cancel
-                        </button>
-                      </div>
-                    </template>
-                    <template v-else>
-                      <div class="flex gap-2">
-                        <button @click="startBatchEdit" class="btn btn-primary btn-sm">
-                          Edit
-                        </button>
-                        <button @click="removePlayer(stat.playerId)" class="btn btn-error btn-sm">
-                          Remove
-                        </button>
-                      </div>
-                    </template>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         </div>
+
+        <!-- 比赛视频 Game Videos-->
+        <input type="radio" name="my_tabs_2" class="tab" aria-label="Game Videos" />
+        <div class="tab-content">
+          <div class="flex flex-col lg:flex-row gap-6 p-4 justify-start">
+            <!-- 视频容器 -->
+            <div class="w-full lg:w-[560px]">
+              <div class="relative w-full pt-[56.25%]">
+                <iframe class="absolute inset-0 w-full h-full rounded-lg shadow-lg"
+                  src="https://www.youtube.com/embed/ZfXGbj61HYQ?si=ZIf-r0X9NdT_4Qt0" title="YouTube video player"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+                </iframe>
+              </div>
+            </div>
+
+            <!-- 第二个视频 -->
+            <div class="w-full lg:w-[560px]">
+              <div class="relative w-full pt-[56.25%]">
+                <iframe class="absolute inset-0 w-full h-full rounded-lg shadow-lg"
+                  src="https://www.youtube.com/embed/ZfXGbj61HYQ?si=ZIf-r0X9NdT_4Qt0" title="YouTube video player"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+                </iframe>
+              </div>
+            </div>
+
+            <!-- 第三个视频 -->
+            <div class="w-full lg:w-[560px]">
+              <div class="relative w-full pt-[56.25%]">
+                <iframe class="absolute inset-0 w-full h-full rounded-lg shadow-lg"
+                  src="https://www.youtube.com/embed/ZfXGbj61HYQ?si=ZIf-r0X9NdT_4Qt0" title="YouTube video player"
+                  frameborder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+                </iframe>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
       </div>
     </div>
   </div>
