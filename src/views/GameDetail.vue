@@ -2,7 +2,7 @@
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { usePlayerStore } from '@/stores/player'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -47,7 +47,8 @@ const saveGameInfo = async () => {
         GR: editingGameData.value.GR,
         GT: editingGameData.value.GT
       },
-      player_stats: game.value.player_stats || [] // 保留原有的球员数据
+      player_stats: game.value.player_stats || [], // 保留原有的球员数据
+      videos: game.value.videos || [] // 保留原有的视频数据
     }
     console.log('Updating game with:', updatedGame)
     await gameStore.updateGame(game.value.id, updatedGame)
@@ -501,6 +502,81 @@ const stopAllTimers = () => {
     stopTimer(playerId)
   })
 }
+
+const gameURL = ref('')
+const videoList = ref([])
+
+// 在组件加载时获取视频列表
+onMounted(async () => {
+  if (game.value?.videos) {
+    videoList.value = game.value.videos
+  }
+})
+
+// 监听游戏数据变化
+watch(() => game.value, (newGame) => {
+  if (newGame) {
+    console.log('Game data updated:', newGame)
+    videoList.value = newGame.videos || []
+  }
+}, { immediate: true, deep: true })
+
+// 保存视频URL并生成新的播放器
+const saveVideoURL = async () => {
+  if (!gameURL.value) return
+
+  try {
+    // 创建新的视频对象
+    const newVideo = {
+      id: Date.now(),
+      url: gameURL.value
+    }
+
+    // 确保 videos 数组存在
+    const currentVideos = game.value.videos || []
+
+    // 更新游戏数据
+    const updatedGame = {
+      ...game.value,
+      videos: [...currentVideos, newVideo]
+    }
+
+    console.log('Saving video with game data:', updatedGame)
+    // 保存到后端
+    await gameStore.updateGame(game.value.id, updatedGame)
+
+    // 更新本地状态
+    videoList.value = [...currentVideos, newVideo]
+    gameURL.value = '' // 清空输入框
+  } catch (error) {
+    console.error('Error saving video URL:', error)
+    alert('Error saving video URL, please try again')
+  }
+}
+
+// 删除视频
+const removeVideo = async (id) => {
+  try {
+    // 确保 videos 数组存在
+    const currentVideos = game.value.videos || []
+
+    // 更新游戏数据
+    const updatedGame = {
+      ...game.value,
+      videos: currentVideos.filter(video => video.id !== id)
+    }
+
+    console.log('Removing video with game data:', updatedGame)
+    // 保存到后端
+    await gameStore.updateGame(game.value.id, updatedGame)
+
+    // 更新本地状态
+    videoList.value = currentVideos.filter(video => video.id !== id)
+  } catch (error) {
+    console.error('Error removing video:', error)
+    alert('Error removing video, please try again')
+  }
+}
 </script>
 
 <template>
@@ -624,7 +700,7 @@ const stopAllTimers = () => {
         </div>
       </div>
 
-      <div class="tabs tabs-border">
+      <div class="tabs tabs-sm">
         <!-- 球队数据卡片 Team Statistics-->
         <input type="radio" name="my_tabs_2" class="tab" aria-label="Team Statistics" checked="checked" />
         <div class="tab-content">
@@ -706,7 +782,7 @@ const stopAllTimers = () => {
         </div>
 
         <!-- 球员数据表格 Box Score -->
-        <input type="radio" name="my_tabs_2" class="tab" aria-label="Box Score" />
+        <input type="radio" name="my_tabs_2" class="tab " aria-label="Box Score" />
         <div class="tab-content">
           <div class="overflow-x-auto p-6">
             <div class="flex flex-col gap-4">
@@ -974,46 +1050,33 @@ const stopAllTimers = () => {
         <!-- 比赛视频 Game Videos-->
         <input type="radio" name="my_tabs_2" class="tab" aria-label="Game Videos" />
         <div class="tab-content">
-          <div class="flex flex-col lg:flex-row gap-6 p-4 justify-start">
-            <!-- 视频容器 -->
-            <div class="w-full lg:w-[560px]">
-              <div class="relative w-full pt-[56.25%]">
-                <iframe class="absolute inset-0 w-full h-full rounded-lg shadow-lg"
-                  src="https://www.youtube.com/embed/ZfXGbj61HYQ?si=ZIf-r0X9NdT_4Qt0" title="YouTube video player"
-                  frameborder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-                </iframe>
+          <div class="py-4 flex flex-col lg:flex-row gap-4 lg:flex-wrap">
+            <!-- URL输入框和保存按钮 -->
+            <div class="w-full lg:w-1/3 mx-auto">
+              <div v-if="authStore.isAdmin" class="flex gap-2">
+                <input type="text" v-model="gameURL" class="input input-bordered flex-1"
+                  placeholder="Enter YouTube URL">
+                <button v-if="authStore.isAdmin" @click="saveVideoURL" class="btn btn-primary">Save</button>
               </div>
             </div>
 
-            <!-- 第二个视频 -->
-            <div class="w-full lg:w-[560px]">
-              <div class="relative w-full pt-[56.25%]">
-                <iframe class="absolute inset-0 w-full h-full rounded-lg shadow-lg"
-                  src="https://www.youtube.com/embed/ZfXGbj61HYQ?si=ZIf-r0X9NdT_4Qt0" title="YouTube video player"
-                  frameborder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-                </iframe>
-              </div>
-            </div>
-
-            <!-- 第三个视频 -->
-            <div class="w-full lg:w-[560px]">
-              <div class="relative w-full pt-[56.25%]">
-                <iframe class="absolute inset-0 w-full h-full rounded-lg shadow-lg"
-                  src="https://www.youtube.com/embed/ZfXGbj61HYQ?si=ZIf-r0X9NdT_4Qt0" title="YouTube video player"
-                  frameborder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-                </iframe>
+            <!-- 视频播放器列表 -->
+            <div class="flex flex-col lg:flex-row flex-wrap gap-4">
+              <div v-for="video in videoList" :key="video.id" class="w-full lg:w-[560px]">
+                <div class="relative w-full pt-[56.25%]">
+                  <iframe class="absolute inset-0 w-full h-full rounded-lg shadow-lg" :src="video.url"
+                    title="YouTube video player" frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
+                  </iframe>
+                </div>
+                <div v-if="authStore.isAdmin" class="flex justify-end pt-2">
+                  <button @click="removeVideo(video.id)" class="btn btn-error btn-sm">Remove</button>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-
       </div>
     </div>
   </div>

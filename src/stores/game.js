@@ -30,7 +30,8 @@ export const useGameStore = defineStore('game', {
             date: gameData.date,
             opponent: gameData.opponent,
             team_stats: gameData.teamStats || {},
-            player_stats: gameData.playerStats || []
+            player_stats: gameData.playerStats || [],
+            videos: gameData.videos || []
           }])
           .select()
           .single()
@@ -53,7 +54,8 @@ export const useGameStore = defineStore('game', {
             date: gameData.date,
             opponent: gameData.opponent,
             team_stats: gameData.team_stats,
-            player_stats: gameData.player_stats || []
+            player_stats: gameData.player_stats || [],
+            videos: gameData.videos || []
           })
           .eq('id', gameId)
           .select()
