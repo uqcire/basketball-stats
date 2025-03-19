@@ -180,7 +180,7 @@ const calculatePercentage = (made, attempted) => {
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8">
+  <div class="container mx-auto py-4">
     <div class="flex flex-col gap-4 border rounded-lg shadow-lg p-4">
       <!-- Header -->
       <div class="flex justify-between items-center mb-6 border-b pb-4">

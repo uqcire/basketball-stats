@@ -175,14 +175,8 @@ const calculatePercentage = (made, attempted) => {
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <div class="flex flex-col gap-4 border rounded-lg shadow-lg p-4">
-      <!-- Header -->
-      <div class="flex justify-between items-center mb-6 border-b pb-4">
-        <h1 class="text-xl font-bold">Team Statistics</h1>
-
-      </div>
-
+  <div class="container mx-auto py-4">
+    <div class="flex flex-col gap-4 rounded-lg">
       <!-- 平均数据卡片 -->
       <div class="p-4 border rounded shadow-lg">
         <!-- Glossary -->
@@ -240,49 +234,53 @@ const calculatePercentage = (made, attempted) => {
             </div>
           </div>
         </div>
-        <h3 class="text-xl font-bold">Team Average Statistics</h3>
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">PTS</div>
-            <div class="stat-value">{{ teamAverageStats?.PTS?.toFixed(1) || '0.0' }}</div>
+        <div class="flex-col justify-between items-center">
+          <div class="p-4 border-b">
+            <h3 class="text-xl font-bold">Team Average Statistics</h3>
           </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">FG%</div>
-            <div class="stat-value">{{ calculatePercentage(teamAverageStats?.FGM, teamAverageStats?.FGA) }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">3P%</div>
-            <div class="stat-value">{{ calculatePercentage(teamAverageStats?.threePM, teamAverageStats?.threePA) }}
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="stat rounded-lg shadow-lg">
+              <div class="stat-title">PTS</div>
+              <div class="stat-value">{{ teamAverageStats?.PTS?.toFixed(1) || '0.0' }}</div>
             </div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">FT%</div>
-            <div class="stat-value">{{ calculatePercentage(teamAverageStats?.FTM, teamAverageStats?.FTA) }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">REB</div>
-            <div class="stat-value">{{ ((teamAverageStats?.OREB || 0) + (teamAverageStats?.DREB || 0)).toFixed(1) }}
+            <div class="stat rounded-lg shadow-lg">
+              <div class="stat-title">FG%</div>
+              <div class="stat-value">{{ calculatePercentage(teamAverageStats?.FGM, teamAverageStats?.FGA) }}</div>
             </div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">AST</div>
-            <div class="stat-value">{{ teamAverageStats?.AST?.toFixed(1) || '0.0' }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">STL</div>
-            <div class="stat-value">{{ teamAverageStats?.STL?.toFixed(1) || '0.0' }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">BLK</div>
-            <div class="stat-value">{{ teamAverageStats?.BLK?.toFixed(1) || '0.0' }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">TOV</div>
-            <div class="stat-value">{{ teamAverageStats?.TOV?.toFixed(1) || '0.0' }}</div>
-          </div>
-          <div class="stat rounded-lg shadow-lg">
-            <div class="stat-title">PF</div>
-            <div class="stat-value">{{ teamAverageStats?.PF?.toFixed(1) || '0.0' }}</div>
+            <div class="stat rounded-lg shadow-lg">
+              <div class="stat-title">3P%</div>
+              <div class="stat-value">{{ calculatePercentage(teamAverageStats?.threePM, teamAverageStats?.threePA) }}
+              </div>
+            </div>
+            <div class="stat rounded-lg shadow-lg">
+              <div class="stat-title">FT%</div>
+              <div class="stat-value">{{ calculatePercentage(teamAverageStats?.FTM, teamAverageStats?.FTA) }}</div>
+            </div>
+            <div class="stat rounded-lg shadow-lg">
+              <div class="stat-title">REB</div>
+              <div class="stat-value">{{ ((teamAverageStats?.OREB || 0) + (teamAverageStats?.DREB || 0)).toFixed(1) }}
+              </div>
+            </div>
+            <div class="stat rounded-lg shadow-lg">
+              <div class="stat-title">AST</div>
+              <div class="stat-value">{{ teamAverageStats?.AST?.toFixed(1) || '0.0' }}</div>
+            </div>
+            <div class="stat rounded-lg shadow-lg">
+              <div class="stat-title">STL</div>
+              <div class="stat-value">{{ teamAverageStats?.STL?.toFixed(1) || '0.0' }}</div>
+            </div>
+            <div class="stat rounded-lg shadow-lg">
+              <div class="stat-title">BLK</div>
+              <div class="stat-value">{{ teamAverageStats?.BLK?.toFixed(1) || '0.0' }}</div>
+            </div>
+            <div class="stat rounded-lg shadow-lg">
+              <div class="stat-title">TOV</div>
+              <div class="stat-value">{{ teamAverageStats?.TOV?.toFixed(1) || '0.0' }}</div>
+            </div>
+            <div class="stat rounded-lg shadow-lg">
+              <div class="stat-title">PF</div>
+              <div class="stat-value">{{ teamAverageStats?.PF?.toFixed(1) || '0.0' }}</div>
+            </div>
           </div>
         </div>
       </div>
