@@ -713,30 +713,23 @@ const removeVideo = async (id) => {
                 </div>
               </div>
               <div class="stat rounded-lg shadow-lg">
-                <div class="stat-title">FG</div>
+                <div class="stat-title">
+                  FG ({{ calculatePercentage(teamStats.FGM, teamStats.FGA) }})
+                </div>
                 <div class="stat-value">
                   {{ teamStats.FGM || 0 }}/{{ teamStats.FGA || 0 }}
-                  <span class="text-gray-500 text-sm">
-                    ({{ calculatePercentage(teamStats.FGM, teamStats.FGA) }})
-                  </span>
                 </div>
               </div>
               <div class="stat rounded-lg shadow-lg">
-                <div class="stat-title">3P</div>
+                <div class="stat-title">3P ({{ calculatePercentage(teamStats.threePM, teamStats.threePA) }})</div>
                 <div class="stat-value">
                   {{ teamStats.threePM || 0 }}/{{ teamStats.threePA || 0 }}
-                  <span class="text-gray-500 text-sm">
-                    ({{ calculatePercentage(teamStats.threePM, teamStats.threePA) }})
-                  </span>
                 </div>
               </div>
               <div class="stat rounded-lg shadow-lg">
-                <div class="stat-title">FT</div>
+                <div class="stat-title">FT ({{ calculatePercentage(teamStats.FTM, teamStats.FTA) }})</div>
                 <div class="stat-value">
                   {{ teamStats.FTM || 0 }}/{{ teamStats.FTA || 0 }}
-                  <span class="text-gray-500 text-sm">
-                    ({{ calculatePercentage(teamStats.FTM, teamStats.FTA) }})
-                  </span>
                 </div>
               </div>
               <div class="stat rounded-lg shadow-lg">
@@ -751,9 +744,6 @@ const removeVideo = async (id) => {
                 <div class="stat-title">REB</div>
                 <div class="stat-value">
                   {{ (teamStats.OREB || 0) + (teamStats.DREB || 0) }}
-                  <span class="text-gray-500 text-sm">
-                    ({{ teamStats.OREB || 0 }}/{{ teamStats.DREB || 0 }})
-                  </span>
                 </div>
               </div>
 
