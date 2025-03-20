@@ -301,7 +301,13 @@ const handleClickOutside = (event) => {
 }
 
 // 监听点击事件
-onMounted(() => {
+onMounted(async () => {
+  // 滚动到页面顶部
+  window.scrollTo(0, 0)
+
+  if (game.value?.videos) {
+    videoList.value = game.value.videos
+  }
   document.addEventListener('click', handleClickOutside)
 })
 
@@ -505,13 +511,6 @@ const stopAllTimers = () => {
 
 const gameURL = ref('')
 const videoList = ref([])
-
-// 在组件加载时获取视频列表
-onMounted(async () => {
-  if (game.value?.videos) {
-    videoList.value = game.value.videos
-  }
-})
 
 // 监听游戏数据变化
 watch(() => game.value, (newGame) => {
