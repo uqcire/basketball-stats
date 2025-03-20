@@ -775,26 +775,6 @@ const removeVideo = async (id) => {
         <div class="tab-content">
           <div class="overflow-x-auto p-6">
             <div class="flex flex-col gap-4">
-              <div class="flex justify-between items-center">
-                <div v-if="authStore.isAdmin" class="flex gap-2">
-                  <template v-if="editingMode">
-                    <div class="flex gap-2 mr-4">
-                      <button @click="pauseAllTimers" class="btn btn-warning btn-sm">
-                        ⏸️ Pause All
-                      </button>
-                      <button @click="startAllTimers" class="btn btn-success btn-sm">
-                        ▶️ Start All
-                      </button>
-                      <button @click="stopAllTimers" class="btn btn-error btn-sm">
-                        ⏹️ Stop All
-                      </button>
-                    </div>
-                    <button @click="saveBatchStats" class="btn btn-primary btn-sm">Save All</button>
-                    <button @click="cancelBatchEdit" class="btn btn-soft btn-sm">Cancel</button>
-                  </template>
-                  <button v-else @click="startBatchEdit" class="btn btn-primary btn-sm">Edit All</button>
-                </div>
-              </div>
               <div class="overflow-x-auto rounded-lg shadow-lg">
                 <table class="table-md table-pin-cols">
                   <thead>
@@ -1031,6 +1011,26 @@ const removeVideo = async (id) => {
                     </tr>
                   </tbody>
                 </table>
+              </div>
+              <div class="flex justify-between items-center">
+                <div v-if="authStore.isAdmin" class="flex gap-2">
+                  <template v-if="editingMode">
+                    <div class="flex gap-2 mr-4">
+                      <button @click="pauseAllTimers" class="btn btn-warning btn-sm">
+                        ⏸️ Pause All
+                      </button>
+                      <button @click="startAllTimers" class="btn btn-success btn-sm">
+                        ▶️ Start All
+                      </button>
+                      <button @click="stopAllTimers" class="btn btn-error btn-sm">
+                        ⏹️ Stop All
+                      </button>
+                    </div>
+                    <button @click="saveBatchStats" class="btn btn-primary btn-sm">Save All</button>
+                    <button @click="cancelBatchEdit" class="btn btn-soft btn-sm">Cancel</button>
+                  </template>
+                  <button v-else @click="startBatchEdit" class="btn btn-primary btn-sm">Edit All</button>
+                </div>
               </div>
             </div>
           </div>
