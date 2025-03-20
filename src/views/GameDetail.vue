@@ -1039,7 +1039,7 @@ const removeVideo = async (id) => {
         <!-- 比赛视频 Game Videos-->
         <input type="radio" name="my_tabs_2" class="tab" aria-label="Game Videos" />
         <div class="tab-content">
-          <div class="py-4 flex flex-col lg:flex-row gap-4 lg:flex-wrap">
+          <div class="py-4 flex flex-col gap-4 lg:flex-wrap">
             <!-- URL输入框和保存按钮 -->
             <div class="w-full lg:w-1/3 mx-auto">
               <div v-if="authStore.isAdmin" class="flex gap-2">
