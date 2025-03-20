@@ -700,7 +700,7 @@ const removeVideo = async (id) => {
         </div>
       </div>
 
-      <div class="tabs tabs-sm">
+      <div class="tabs tabs-border tabs-sm">
         <!-- 球队数据卡片 Team Statistics-->
         <input type="radio" name="my_tabs_2" class="tab" aria-label="Team Statistics" checked="checked" />
         <div class="tab-content">
