@@ -126,13 +126,15 @@ const saveBatchStats = async () => {
       return team
     }, {})
 
-    // 保持原有的GR和GT值
-    newTeamStats.GR = game.value.team_stats?.GR || '-'
-    newTeamStats.GT = game.value.team_stats?.GT || '-'
+    // 保持原有的所有 team_stats 数据
+    const updatedTeamStats = {
+      ...game.value.team_stats,  // 保留所有原有数据，包括 opponent, GR, GT 等
+      ...newTeamStats  // 更新统计数据
+    }
 
     const updatedGame = {
       ...game.value,
-      team_stats: newTeamStats,
+      team_stats: updatedTeamStats,
       player_stats: currentStats
     }
 
