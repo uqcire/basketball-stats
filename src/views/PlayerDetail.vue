@@ -180,54 +180,70 @@ const deleteGameRecord = async (gameId) => {
             </div>
             <!-- 数据卡片 -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <!-- 比赛场次 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">GP</div>
                 <div class="stat-value">{{ playerStats.length }}</div>
               </div>
+              <!-- 场均时间 -->
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">MIN</div>
+                <div class="stat-value">{{ playerAverageStats?.MIN?.toFixed(1) || '0.0' }}</div>
+              </div>
+              <!-- 场均得分 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">AP</div>
                 <div class="stat-value">{{ playerAverageStats?.PTS?.toFixed(1) || '0.0' }}</div>
               </div>
+              <!-- 投篮命中率 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">FG%</div>
                 <div class="stat-value">
                   {{ calculatePercentage(playerAverageStats?.FGM, playerAverageStats?.FGA) }}
                 </div>
               </div>
+              <!-- 三分命中率 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">3P%</div>
                 <div class="stat-value">
                   {{ calculatePercentage(playerAverageStats?.threePM, playerAverageStats?.threePA) }}
                 </div>
               </div>
+              <!-- 罚球命中率 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">FT%</div>
                 <div class="stat-value">
                   {{ calculatePercentage(playerAverageStats?.FTM, playerAverageStats?.FTA) }}
                 </div>
               </div>
+              <!-- 篮板 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">REB</div>
                 <div class="stat-value">
                   {{ ((playerAverageStats?.OREB || 0) + (playerAverageStats?.DREB || 0)).toFixed(1) }}
                 </div>
               </div>
+              <!-- 助攻 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">AST</div>
                 <div class="stat-value">{{ playerAverageStats?.AST?.toFixed(1) || '0.0' }}</div>
               </div>
+              <!-- 抢断 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">STL</div>
                 <div class="stat-value">{{ playerAverageStats?.STL?.toFixed(1) || '0.0' }}</div>
               </div>
+              <!-- 盖帽 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">BLK</div>
                 <div class="stat-value">{{ playerAverageStats?.BLK?.toFixed(1) || '0.0' }}</div>
               </div>
+              <!-- 失误 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">TOV</div>
                 <div class="stat-value">{{ playerAverageStats?.TOV?.toFixed(1) || '0.0' }}</div>
               </div>
+              <!-- 犯规 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">PF</div>
                 <div class="stat-value">{{ playerAverageStats?.PF?.toFixed(1) || '0.0' }}</div>
