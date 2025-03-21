@@ -238,7 +238,7 @@ const calculatePercentage = (made, attempted) => {
           <div class="p-4 border-b">
             <h3 class="text-xl font-bold">Team Average Statistics</h3>
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
             <div class="stat rounded-lg shadow-lg">
               <div class="stat-title">PTS</div>
               <div class="stat-value">{{ teamAverageStats?.PTS?.toFixed(1) || '0.0' }}</div>

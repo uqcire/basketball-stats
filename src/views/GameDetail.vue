@@ -12,6 +12,7 @@ import {
   preserveTeamInfo
 } from '@/utils/gameUtils'
 import {
+  clearAllTimers,
   pauseAllTimers,
   pauseTimer,
   startAllTimers,
@@ -208,7 +209,6 @@ const playerCount = computed(() => playerStats.value.length)
 // 计算球队总数据
 const teamStats = computed(() => {
   if (!playerStats.value.length) return {}
-
   return calculateTeamStats(playerStats.value)
 })
 
@@ -367,6 +367,11 @@ const getSortIcon = (key) => {
 // 在 script setup 部分添加计时器相关的状态和方法
 const activeTimers = ref({})
 const timerIntervals = ref({})
+
+// 在组件卸载时清理所有计时器
+onUnmounted(() => {
+  clearAllTimers(timerIntervals.value)
+})
 
 // 计时器相关方法
 const handleStartTimer = (playerId) => {
