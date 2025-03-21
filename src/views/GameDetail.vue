@@ -669,57 +669,149 @@ const removeVideo = async (id) => {
                   <thead>
                     <tr>
                       <th
-                        class="sticky left-0 bg-base-200 z-10 px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                        class="sticky left-0 bg-base-200 z-10 px-6 text-left text-md font-medium text-gray-600 cursor-pointer"
                         @click="sortStats('name')">
-                        Player {{ getSortIcon('name') }}
+                        <div class="flex gap-1">
+                          <span>
+                            Player
+                          </span>
+                          <span>
+                            {{ getSortIcon('name') }}
+                          </span>
+                        </div>
+
                       </th>
                       <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('number')">
-                        # {{ getSortIcon('number') }}
+                        <div class="flex gap-1">
+                          <span>
+                            #
+                          </span>
+                          <span>
+                            {{ getSortIcon('number') }}
+                          </span>
+                        </div>
                       </th>
                       <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('PTS')">
-                        PTS {{ getSortIcon('PTS') }}
+                        <div class="flex gap-1">
+                          <span>
+                            PTS
+                          </span>
+                          <span>
+                            {{ getSortIcon('PTS') }}
+                          </span>
+                        </div>
                       </td>
                       <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('MIN')">
-                        MIN {{ getSortIcon('MIN') }}
+                        <div class="flex gap-1">
+                          <span>
+                            MIN
+                          </span>
+                          <span>
+                            {{ getSortIcon('MIN') }}
+                          </span>
+                        </div>
                       </td>
                       <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('FGM/FGA')">
-                        FGM/FGA {{ getSortIcon('FGM/FGA') }}
+                        <div class="flex gap-1">
+                          <span>
+                            FGM/FGA
+                          </span>
+                          <span>
+                            {{ getSortIcon('FGM/FGA') }}
+                          </span>
+                        </div>
                       </td>
                       <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('3PM/3PA')">
-                        3PM/3PA {{ getSortIcon('3PM/3PA') }}
+                        <div class="flex gap-1">
+                          <span>
+                            3PM/3PA
+                          </span>
+                          <span>
+                            {{ getSortIcon('3PM/3PA') }}
+                          </span>
+                        </div>
                       </td>
                       <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('FTM/FTA')">
-                        FTM/FTA {{ getSortIcon('FTM/FTA') }}
+                        <div class="flex gap-1">
+                          <span>
+                            FTM/FTA
+                          </span>
+                          <span>
+                            {{ getSortIcon('FTM/FTA') }}
+                          </span>
+                        </div>
                       </td>
                       <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('OREB/DREB')">
-                        OREB/DREB {{ getSortIcon('OREB/DREB') }}
+                        <div class="flex gap-1">
+                          <span>
+                            OREB/DREB
+                          </span>
+                          <span>
+                            {{ getSortIcon('OREB/DREB') }}
+                          </span>
+                        </div>
                       </td>
                       <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('AST')">
-                        AST {{ getSortIcon('AST') }}
+                        <div class="flex gap-1">
+                          <span>
+                            AST
+                          </span>
+                          <span>
+                            {{ getSortIcon('AST') }}
+                          </span>
+                        </div>
                       </td>
                       <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('STL')">
-                        STL {{ getSortIcon('STL') }}
+                        <div class="flex gap-1">
+                          <span>
+                            STL
+                          </span>
+                          <span>
+                            {{ getSortIcon('STL') }}
+                          </span>
+                        </div>
                       </td>
                       <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('BLK')">
-                        BLK {{ getSortIcon('BLK') }}
+                        <div class="flex gap-1">
+                          <span>
+                            BLK
+                          </span>
+                          <span>
+                            {{ getSortIcon('BLK') }}
+                          </span>
+                        </div>
                       </td>
                       <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('TOV')">
-                        TOV {{ getSortIcon('TOV') }}
+                        <div class="flex gap-1">
+                          <span>
+                            TOV
+                          </span>
+                          <span>
+                            {{ getSortIcon('TOV') }}
+                          </span>
+                        </div>
                       </td>
                       <td class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer  "
                         @click="sortStats('PF')">
-                        PF {{ getSortIcon('PF') }}
+                        <div class="flex gap-1">
+                          <span>
+                            PF
+                          </span>
+                          <span>
+                            {{ getSortIcon('PF') }}
+                          </span>
+                        </div>
                       </td>
                       <td v-if="authStore.isAdmin" class="px-6 py-3 text-left text-md font-medium text-gray-600">
                         Action
@@ -729,16 +821,16 @@ const removeVideo = async (id) => {
                   <tbody class="divide-y divide-gray-200">
                     <tr v-for="stat in sortedPlayerStats" :key="stat.playerId" class="hover:bg-base-100"
                       :class="{ 'bg-blue-50': editingMode }">
-                      <th class="sticky left-0 bg-base-200 z-10 px-6 py-4 whitespace-nowrap text-start">
+                      <th class="sticky left-0 bg-base-200 z-10 px-6 py-2 whitespace-nowrap text-start">
                         {{ stat.name }}
                       </th>
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      <td class="px-6 py-2 text-left whitespace-nowrap  font-semibold">
                         {{ stat.number }}
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap font-semibold">
+                      <td class="px-6 py-2 whitespace-nowrap text-left font-semibold">
                         {{ calculatePoints(stat) }}
                       </td>
-                      <td class="px-6 py-2 whitespace-nowrap">
+                      <td class="px-4 py-2 whitespace-nowrap">
                         <template v-if="editingMode">
                           <div class="flex items-center gap-2">
                             <template v-if="activeTimers[stat.playerId]">
@@ -759,7 +851,7 @@ const removeVideo = async (id) => {
                             </template>
                             <template v-else>
                               <input v-model="editingStats[stat.playerId].MIN" type="number" min="0" step="0.1"
-                                class="w-16 px-2 py-1 border rounded">
+                                class="input input-xs">
                               <button @click="handleStartTimer(stat.playerId)" class="btn btn-xs btn-soft">
                                 ▶️
                               </button>
@@ -770,13 +862,13 @@ const removeVideo = async (id) => {
                           <span class="font-mono">{{ formatDisplayTime(stat.MIN) }}</span>
                         </template>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      <td class="px-4 py-4 whitespace-nowrap">
                         <template v-if="editingMode">
                           <input v-model="editingStats[stat.playerId].FGM" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-12 px-2 py-1 border rounded">
                           /
                           <input v-model="editingStats[stat.playerId].FGA" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-12 px-2 py-1 border rounded">
                         </template>
                         <template v-else>
                           {{ stat.FGM }}/{{ stat.FGA }}
@@ -785,13 +877,13 @@ const removeVideo = async (id) => {
                           </span>
                         </template>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      <td class="px-4 py-4 whitespace-nowrap">
                         <template v-if="editingMode">
                           <input v-model="editingStats[stat.playerId].threePM" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-12 px-2 py-1 border rounded">
                           /
                           <input v-model="editingStats[stat.playerId].threePA" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-12 px-2 py-1 border rounded">
                         </template>
                         <template v-else>
                           {{ stat.threePM }}/{{ stat.threePA }}
@@ -800,13 +892,13 @@ const removeVideo = async (id) => {
                           </span>
                         </template>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      <td class="px-4 py-4 whitespace-nowrap">
                         <template v-if="editingMode">
                           <input v-model="editingStats[stat.playerId].FTM" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-12 px-2 py-1 border rounded">
                           /
                           <input v-model="editingStats[stat.playerId].FTA" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-12 px-2 py-1 border rounded">
                         </template>
                         <template v-else>
                           {{ stat.FTM }}/{{ stat.FTA }}
@@ -818,10 +910,10 @@ const removeVideo = async (id) => {
                       <td class="px-6 py-4 whitespace-nowrap">
                         <template v-if="editingMode">
                           <input v-model="editingStats[stat.playerId].OREB" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-12 px-2 py-1 border rounded">
                           /
                           <input v-model="editingStats[stat.playerId].DREB" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-12 px-2 py-1 border rounded">
                         </template>
                         <template v-else>
                           {{ stat.OREB + stat.DREB }}
@@ -833,7 +925,7 @@ const removeVideo = async (id) => {
                       <td class="px-6 py-4 whitespace-nowrap">
                         <template v-if="editingMode">
                           <input v-model="editingStats[stat.playerId].AST" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-10 px-2 py-1 border rounded">
                         </template>
                         <template v-else>
                           {{ stat.AST }}
@@ -842,7 +934,7 @@ const removeVideo = async (id) => {
                       <td class="px-6 py-4 whitespace-nowrap">
                         <template v-if="editingMode">
                           <input v-model="editingStats[stat.playerId].STL" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-10 px-2 py-1 border rounded">
                         </template>
                         <template v-else>
                           {{ stat.STL }}
@@ -851,7 +943,7 @@ const removeVideo = async (id) => {
                       <td class="px-6 py-4 whitespace-nowrap">
                         <template v-if="editingMode">
                           <input v-model="editingStats[stat.playerId].BLK" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-10 px-2 py-1 border rounded">
                         </template>
                         <template v-else>
                           {{ stat.BLK }}
@@ -860,16 +952,16 @@ const removeVideo = async (id) => {
                       <td class="px-6 py-4 whitespace-nowrap">
                         <template v-if="editingMode">
                           <input v-model="editingStats[stat.playerId].TOV" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-10 px-2 py-1 border rounded">
                         </template>
                         <template v-else>
                           {{ stat.TOV }}
                         </template>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      <td class="px-4 py-4 whitespace-nowrap">
                         <template v-if="editingMode">
                           <input v-model="editingStats[stat.playerId].PF" type="number" min="0"
-                            class="w-16 px-2 py-1 border rounded">
+                            class="w-12 px-2 py-1 border rounded">
                         </template>
                         <template v-else>
                           {{ stat.PF }}
