@@ -2,6 +2,23 @@
 import { useAuthStore } from '@/stores/auth'
 import { useGameStore } from '@/stores/game'
 import { usePlayerStore } from '@/stores/player'
+import {
+  calculatePercentage,
+  calculatePoints,
+  calculateTeamStats,
+  createEmptyPlayerStats,
+  formatDisplayTime,
+  formatTime,
+  preserveTeamInfo
+} from '@/utils/gameUtils'
+import {
+  pauseAllTimers,
+  pauseTimer,
+  startAllTimers,
+  startTimer,
+  stopAllTimers,
+  stopTimer
+} from '@/utils/timerUtils'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
@@ -13,10 +30,6 @@ const authStore = useAuthStore()
 
 const gameId = computed(() => Number(route.params.id))
 const game = computed(() => gameStore.getGameById(gameId.value))
-
-// 比赛结果和类型选项
-const gameResults = ['Win', 'Loss', 'Tie']
-const gameTypes = ['Tournement', 'Grading', 'Regular']
 
 // 编辑比赛基本信息
 const editingGameInfo = ref(false)
@@ -118,21 +131,11 @@ const saveBatchStats = async () => {
     }))
 
     // 计算新的团队统计数据
-    const newTeamStats = currentStats.reduce((team, player) => {
-      ['MIN', 'FGM', 'FGA', 'threePM', 'threePA', 'FTM', 'FTA',
-        'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK', 'PF'].forEach(key => {
-          team[key] = (team[key] || 0) + Number(player[key])
-        })
-      return team
-    }, {})
+    const newTeamStats = calculateTeamStats(currentStats)
 
     // 保持原有的所有 team_stats 值
     const existingTeamStats = game.value.team_stats || {}
-    Object.assign(newTeamStats, {
-      opponent: existingTeamStats.opponent || '-',
-      GR: existingTeamStats.GR || '-',
-      GT: existingTeamStats.GT || '-'
-    })
+    preserveTeamInfo(newTeamStats, existingTeamStats)
 
     const updatedGame = {
       ...game.value,
@@ -164,39 +167,10 @@ const addMultiplePlayers = async () => {
 
   try {
     const currentStats = Array.isArray(game.value.player_stats) ? [...game.value.player_stats] : []
-
-    const newPlayersStats = selectedPlayerIds.value.map(playerId => ({
-      playerId: Number(playerId),
-      MIN: 0,
-      FGM: 0,
-      FGA: 0,
-      threePM: 0,
-      threePA: 0,
-      FTM: 0,
-      FTA: 0,
-      OREB: 0,
-      DREB: 0,
-      AST: 0,
-      TOV: 0,
-      STL: 0,
-      BLK: 0,
-      PF: 0
-    }))
-
+    const newPlayersStats = selectedPlayerIds.value.map(playerId => createEmptyPlayerStats(playerId))
     const updatedStats = [...currentStats, ...newPlayersStats]
-
-    // 计算新的团队统计数据
-    const newTeamStats = updatedStats.reduce((team, player) => {
-      ['MIN', 'FGM', 'FGA', 'threePM', 'threePA', 'FTM', 'FTA',
-        'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK', 'PF'].forEach(key => {
-          team[key] = (team[key] || 0) + Number(player[key])
-        })
-      return team
-    }, {})
-
-    newTeamStats.opponent = game.value.team_stats?.opponent || '-'
-    newTeamStats.GR = game.value.team_stats?.GR || '-'
-    newTeamStats.GT = game.value.team_stats?.GT || '-'
+    const newTeamStats = calculateTeamStats(updatedStats)
+    preserveTeamInfo(newTeamStats, game.value.team_stats || {})
 
     const updatedGame = {
       ...game.value,
@@ -205,10 +179,8 @@ const addMultiplePlayers = async () => {
     }
 
     await gameStore.updateGame(gameId.value, updatedGame)
-
     selectedPlayerIds.value = []
     showAddPlayer.value = false
-
     await gameStore.fetchGames()
   } catch (error) {
     console.error('Error adding players to game:', error)
@@ -233,29 +205,11 @@ const playerStats = computed(() => {
 // 计算上场人数
 const playerCount = computed(() => playerStats.value.length)
 
-// 计算命中率
-const calculatePercentage = (made, attempted) => {
-  if (!attempted) return 'N/A'
-  return ((made / attempted) * 100).toFixed(1) + '%'
-}
-
-// 计算得分
-const calculatePoints = (stat) => {
-  return (stat.FGM * 2) + (stat.threePM * 3) + stat.FTM
-}
-
 // 计算球队总数据
 const teamStats = computed(() => {
   if (!playerStats.value.length) return {}
 
-  return playerStats.value.reduce((total, player) => {
-    Object.keys(player).forEach(key => {
-      if (typeof player[key] === 'number') {
-        total[key] = (total[key] || 0) + player[key]
-      }
-    })
-    return total
-  }, {})
+  return calculateTeamStats(playerStats.value)
 })
 
 // 计算得分
@@ -325,25 +279,9 @@ const removePlayer = async (playerId) => {
   if (!confirm('Are you sure you want to remove this player from this game?')) return
 
   try {
-    // 移除该球员的统计数据
     const updatedStats = game.value.player_stats.filter(stat => stat.playerId !== playerId)
-
-    // 重新计算团队统计数据
-    const newTeamStats = updatedStats.reduce((team, player) => {
-      ['MIN', 'FGM', 'FGA', 'threePM', 'threePA', 'FTM', 'FTA',
-        'OREB', 'DREB', 'AST', 'TOV', 'STL', 'BLK', 'PF'].forEach(key => {
-          team[key] = (team[key] || 0) + Number(player[key])
-        })
-      return team
-    }, {})
-
-    // 保持原有的所有 team_stats 值
-    const existingTeamStats = game.value.team_stats || {}
-    Object.assign(newTeamStats, {
-      opponent: existingTeamStats.opponent || '-',
-      GR: existingTeamStats.GR || '-',
-      GT: existingTeamStats.GT || '-'
-    })
+    const newTeamStats = calculateTeamStats(updatedStats)
+    preserveTeamInfo(newTeamStats, game.value.team_stats || {})
 
     const updatedGame = {
       ...game.value,
@@ -430,92 +368,29 @@ const getSortIcon = (key) => {
 const activeTimers = ref({})
 const timerIntervals = ref({})
 
-// 开始计时
-const startTimer = (playerId) => {
-  if (!activeTimers.value[playerId]) {
-    activeTimers.value[playerId] = {
-      minutes: editingStats.value[playerId]?.MIN || 0,
-      seconds: 0,
-      isRunning: true
-    }
-    timerIntervals.value[playerId] = setInterval(() => {
-      if (activeTimers.value[playerId].seconds === 59) {
-        activeTimers.value[playerId].minutes++
-        activeTimers.value[playerId].seconds = 0
-      } else {
-        activeTimers.value[playerId].seconds++
-      }
-    }, 1000)
-  } else if (!activeTimers.value[playerId].isRunning) {
-    // 如果计时器存在但已暂停，重新开始计时
-    activeTimers.value[playerId].isRunning = true
-    timerIntervals.value[playerId] = setInterval(() => {
-      if (activeTimers.value[playerId].seconds === 59) {
-        activeTimers.value[playerId].minutes++
-        activeTimers.value[playerId].seconds = 0
-      } else {
-        activeTimers.value[playerId].seconds++
-      }
-    }, 1000)
-  }
+// 计时器相关方法
+const handleStartTimer = (playerId) => {
+  startTimer(activeTimers.value, timerIntervals.value, editingStats.value, playerId)
 }
 
-// 暂停计时
-const pauseTimer = (playerId) => {
-  if (activeTimers.value[playerId]) {
-    clearInterval(timerIntervals.value[playerId])
-    activeTimers.value[playerId].isRunning = false
-  }
+const handlePauseTimer = (playerId) => {
+  pauseTimer(activeTimers.value, timerIntervals.value, playerId)
 }
 
-// 停止计时并保存
-const stopTimer = (playerId) => {
-  if (activeTimers.value[playerId]) {
-    clearInterval(timerIntervals.value[playerId])
-    editingStats.value[playerId].MIN = activeTimers.value[playerId].minutes
-    delete activeTimers.value[playerId]
-    delete timerIntervals.value[playerId]
-  }
+const handleStopTimer = (playerId) => {
+  stopTimer(activeTimers.value, timerIntervals.value, editingStats.value, playerId)
 }
 
-// 格式化时间显示
-const formatTime = (minutes, seconds) => {
-  return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+const handleStartAllTimers = () => {
+  startAllTimers(activeTimers.value, timerIntervals.value, editingStats.value)
 }
 
-// 格式化显示时间（用于非编辑状态）
-const formatDisplayTime = (minutes) => {
-  const mins = Math.floor(minutes)
-  const secs = Math.round((minutes - mins) * 60)
-  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+const handlePauseAllTimers = () => {
+  pauseAllTimers(activeTimers.value, timerIntervals.value)
 }
 
-// 在组件卸载时清理所有计时器
-onUnmounted(() => {
-  Object.keys(timerIntervals.value).forEach(playerId => {
-    clearInterval(timerIntervals.value[playerId])
-  })
-})
-
-// 在 script setup 部分添加暂停所有计时器的功能
-const pauseAllTimers = () => {
-  Object.keys(activeTimers.value).forEach(playerId => {
-    pauseTimer(playerId)
-  })
-}
-
-// 在 script setup 部分添加开始所有计时器的功能
-const startAllTimers = () => {
-  Object.keys(activeTimers.value).forEach(playerId => {
-    startTimer(playerId)
-  })
-}
-
-// 在 script setup 部分添加停止所有计时器的功能
-const stopAllTimers = () => {
-  Object.keys(activeTimers.value).forEach(playerId => {
-    stopTimer(playerId)
-  })
+const handleStopAllTimers = () => {
+  stopAllTimers(activeTimers.value, timerIntervals.value, editingStats.value)
 }
 
 const gameURL = ref('')
@@ -865,14 +740,14 @@ const removeVideo = async (id) => {
                               <span class="font-mono">{{ formatTime(activeTimers[stat.playerId].minutes,
                                 activeTimers[stat.playerId].seconds) }}</span>
                               <div class="flex gap-1">
-                                <button v-if="activeTimers[stat.playerId].isRunning" @click="pauseTimer(stat.playerId)"
-                                  class="btn btn-xs btn-soft">
+                                <button v-if="activeTimers[stat.playerId].isRunning"
+                                  @click="handlePauseTimer(stat.playerId)" class="btn btn-xs btn-soft">
                                   ⏸️
                                 </button>
-                                <button v-else @click="startTimer(stat.playerId)" class="btn btn-xs btn-soft">
+                                <button v-else @click="handleStartTimer(stat.playerId)" class="btn btn-xs btn-soft">
                                   ▶️
                                 </button>
-                                <button @click="stopTimer(stat.playerId)" class="btn btn-xs btn-soft">
+                                <button @click="handleStopTimer(stat.playerId)" class="btn btn-xs btn-soft">
                                   ⏹️
                                 </button>
                               </div>
@@ -880,7 +755,7 @@ const removeVideo = async (id) => {
                             <template v-else>
                               <input v-model="editingStats[stat.playerId].MIN" type="number" min="0" step="0.1"
                                 class="w-16 px-2 py-1 border rounded">
-                              <button @click="startTimer(stat.playerId)" class="btn btn-xs btn-soft">
+                              <button @click="handleStartTimer(stat.playerId)" class="btn btn-xs btn-soft">
                                 ▶️
                               </button>
                             </template>
@@ -1026,13 +901,13 @@ const removeVideo = async (id) => {
                   <template v-if="editingMode">
                     <div class="flex gap-2 mr-4">
 
-                      <button @click="startAllTimers" class="btn btn-success btn-sm">
+                      <button @click="handleStartAllTimers" class="btn btn-success btn-sm">
                         ▶️ Start All
                       </button>
-                      <button @click="pauseAllTimers" class="btn btn-warning btn-sm">
+                      <button @click="handlePauseAllTimers" class="btn btn-warning btn-sm">
                         ⏸️ Pause All
                       </button>
-                      <button @click="stopAllTimers" class="btn btn-error btn-sm">
+                      <button @click="handleStopAllTimers" class="btn btn-error btn-sm">
                         ⏹️ Stop All
                       </button>
                     </div>
