@@ -176,15 +176,10 @@ const deleteGameRecord = async (gameId) => {
           <div class="flex flex-col gap-4">
             <!-- Header -->
             <div class="border-b p-4">
-              <h2 class="text-xl font-bold">Career Data Overview</h2>
+              <h2 class="text-xl font-bold">Career Data Overview ({{ playerStats.length }} GP)</h2>
             </div>
             <!-- 数据卡片 -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <!-- 比赛场次 -->
-              <div class="stat rounded-lg shadow-lg">
-                <div class="stat-title">GP</div>
-                <div class="stat-value">{{ playerStats.length }}</div>
-              </div>
               <!-- 场均时间 -->
               <div class="stat rounded-lg shadow-lg">
                 <div class="stat-title">MIN</div>
@@ -201,6 +196,11 @@ const deleteGameRecord = async (gameId) => {
                 <div class="stat-value">
                   {{ calculatePercentage(playerAverageStats?.FGM, playerAverageStats?.FGA) }}
                 </div>
+              </div>
+              <!-- 场均出手次数 -->
+              <div class="stat rounded-lg shadow-lg">
+                <div class="stat-title">FGA</div>
+                <div class="stat-value">{{ playerAverageStats?.FGA }}</div>
               </div>
               <!-- 三分命中率 -->
               <div class="stat rounded-lg shadow-lg">
