@@ -192,28 +192,23 @@ const deleteGameRecord = async (gameId) => {
               </div>
               <!-- 投篮命中率 -->
               <div class="stat rounded-lg shadow-lg">
-                <div class="stat-title">FG%</div>
+                <div class="stat-title">FG% ({{ playerAverageStats?.FGM }}/{{ playerAverageStats?.FGA }})</div>
                 <div class="stat-value">
                   {{ calculatePercentage(playerAverageStats?.FGM, playerAverageStats?.FGA) }}
                 </div>
               </div>
-              <!-- 场均出手次数 -->
+              <!-- 罚球命中率 -->
               <div class="stat rounded-lg shadow-lg">
-                <div class="stat-title">FGA</div>
-                <div class="stat-value">{{ playerAverageStats?.FGA }}</div>
+                <div class="stat-title">FT% ({{ playerAverageStats?.FTM }}/{{ playerAverageStats?.FTA }})</div>
+                <div class="stat-value">
+                  {{ calculatePercentage(playerAverageStats?.FTM, playerAverageStats?.FTA) }}
+                </div>
               </div>
               <!-- 三分命中率 -->
               <div class="stat rounded-lg shadow-lg">
-                <div class="stat-title">3P%</div>
+                <div class="stat-title">3P% ({{ playerAverageStats?.threePM }}/{{ playerAverageStats?.threePA }})</div>
                 <div class="stat-value">
                   {{ calculatePercentage(playerAverageStats?.threePM, playerAverageStats?.threePA) }}
-                </div>
-              </div>
-              <!-- 罚球命中率 -->
-              <div class="stat rounded-lg shadow-lg">
-                <div class="stat-title">FT%</div>
-                <div class="stat-value">
-                  {{ calculatePercentage(playerAverageStats?.FTM, playerAverageStats?.FTA) }}
                 </div>
               </div>
               <!-- 篮板 -->
