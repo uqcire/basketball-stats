@@ -190,141 +190,139 @@ const calculatePercentage = (made, attempted) => {
       <!-- 球员数据表格 -->
       <div class="overflow-hidden rounded-lg shadow-lg">
         <div class="overflow-x-auto">
-          <table class="min-w-full table-md">
+          <table class="table min-w-full divide-y divide-gray-200">
             <thead>
-              <tr>
+              <tr class="h-14 bg-base-200">
                 <th
-                  class="sticky left-0 bg-base-200 z-10 px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  class="sticky left-0 bg-base-200 z-10 px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer w-48 whitespace-nowrap"
                   @click="sortStats('name')">
-                  Player {{ getSortIcon('name') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  Player {{ getSortIcon('name') }}
+                </th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('number')">
-                  Number {{ getSortIcon('number') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  Number {{ getSortIcon('number') }}
+                </th>
+                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('GP')">
-                  GP {{ getSortIcon('GP') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  GP {{ getSortIcon('GP') }}
+                </th>
+                <th class="px-6 py-3 text-center text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('MIN')">
-                  MIN {{ getSortIcon('MIN') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  MIN {{ getSortIcon('MIN') }}
+                </th>
+                <th class="px-6 py-3 text-center text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('AP')">
-                  AP {{ getSortIcon('AP') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  AP {{ getSortIcon('AP') }}
+                </th>
+                <th class="px-6 py-3 text-center text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('FG%')">
-                  FG% {{ getSortIcon('FG%') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  FG% {{ getSortIcon('FG%') }}
+                </th>
+                <th class="px-6 py-3 text-center text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('3P%')">
-                  3P% {{ getSortIcon('3P%') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  3P% {{ getSortIcon('3P%') }}
+                </th>
+                <th class="px-6 py-3 text-center text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('FT%')">
-                  FT% {{ getSortIcon('FT%') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  FT% {{ getSortIcon('FT%') }}
+                </th>
+                <th class="px-6 py-3 text-center text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('REB')">
-                  REB {{ getSortIcon('REB') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  REB {{ getSortIcon('REB') }}
+                </th>
+                <th class="px-6 py-3 text-center text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('AST')">
-                  AST {{ getSortIcon('AST') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  AST {{ getSortIcon('AST') }}
+                </th>
+                <th class="px-6 py-3 text-center text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('STL')">
-                  STL {{ getSortIcon('STL') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  STL {{ getSortIcon('STL') }}
+                </th>
+                <th class="px-6 py-3 text-center text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('BLK')">
-                  BLK {{ getSortIcon('BLK') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  BLK {{ getSortIcon('BLK') }}
+                </th>
+                <th class="px-6 py-3 text-center text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('TOV')">
-                  TOV {{ getSortIcon('TOV') }}</th>
-                <th class="px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer"
+                  TOV {{ getSortIcon('TOV') }}
+                </th>
+                <th class="px-6 py-3 text-center text-md font-medium text-gray-600 cursor-pointer whitespace-nowrap"
                   @click="sortStats('PF')">
-                  PF {{ getSortIcon('PF') }}</th>
+                  PF {{ getSortIcon('PF') }}
+                </th>
               </tr>
             </thead>
-            <tbody>
-              <tr v-for="player in sortedPlayers" :key="player.id" class="hover:bg-gray-100 cursor-pointer"
+            <tbody class="divide-y divide-gray-200">
+              <tr v-for="player in sortedPlayers" :key="player.id"
+                class="h-14 hover:bg-gray-100 cursor-pointer transition-colors duration-150"
                 @click="router.push(`/players/${player.id}`)">
-                <!-- Player Name -->
-                <td
-                  class="sticky left-0 bg-base-200 z-10 px-6 py-3 text-left text-md font-medium text-gray-600 cursor-pointer">
-                  <div>{{ player.name }}</div>
+                <td class="sticky left-0  z-10 px-6 py-3 text-left text-md font-medium text-gray-600 truncate w-48">
+                  <div class="text-left">{{ player.name }}</div>
                 </td>
-                <!-- Player Number -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>#{{ player.number || '-' }}</div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-left">#{{ player.number || '-' }}</div>
                 </td>
-                <!-- GP -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>{{ getPlayerStats(player.id).length }}</div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-left">{{ getPlayerStats(player.id).length }}</div>
                 </td>
-                <!-- MIN -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>{{ getPlayerAverageStats(player.id)?.MIN?.toFixed(1) || '0.0' }}
-                  </div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-center">{{ getPlayerAverageStats(player.id)?.MIN?.toFixed(1) || '0.0' }}</div>
                 </td>
-                <!-- AP -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>{{ getPlayerAverageStats(player.id)?.PTS?.toFixed(1) || '0.0' }}
-                  </div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-center">{{ getPlayerAverageStats(player.id)?.PTS?.toFixed(1) || '0.0' }}</div>
                 </td>
-                <!-- FG% -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-center">
                     {{ calculatePercentage(
                       getPlayerAverageStats(player.id)?.FGM,
                       getPlayerAverageStats(player.id)?.FGA
                     ) }}
                   </div>
                 </td>
-                <!-- 3P% -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-center">
                     {{ calculatePercentage(
                       getPlayerAverageStats(player.id)?.threePM,
                       getPlayerAverageStats(player.id)?.threePA
                     ) }}
                   </div>
                 </td>
-                <!-- FT% -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-center">
                     {{ calculatePercentage(
                       getPlayerAverageStats(player.id)?.FTM,
                       getPlayerAverageStats(player.id)?.FTA
                     ) }}
                   </div>
                 </td>
-                <!-- REB -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-center">
                     {{ ((getPlayerAverageStats(player.id)?.OREB || 0) +
                       (getPlayerAverageStats(player.id)?.DREB || 0)).toFixed(1) }}
                   </div>
                 </td>
-                <!-- AST -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-center">
                     {{ getPlayerAverageStats(player.id)?.AST?.toFixed(1) || '0.0' }}
                   </div>
                 </td>
-                <!-- STL -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-center">
                     {{ getPlayerAverageStats(player.id)?.STL?.toFixed(1) || '0.0' }}
                   </div>
                 </td>
-                <!-- BLK -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-center">
                     {{ getPlayerAverageStats(player.id)?.BLK?.toFixed(1) || '0.0' }}
                   </div>
                 </td>
-                <!-- TOV -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-center">
                     {{ getPlayerAverageStats(player.id)?.TOV?.toFixed(1) || '0.0' }}
                   </div>
                 </td>
-                <!-- PF -->
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <div>
+                <td class="px-6 py-3 whitespace-nowrap">
+                  <div class="text-center">
                     {{ getPlayerAverageStats(player.id)?.PF?.toFixed(1) || '0.0' }}
                   </div>
                 </td>
