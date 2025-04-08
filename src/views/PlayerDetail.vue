@@ -11,6 +11,17 @@ const playerStore = usePlayerStore()
 const gameStore = useGameStore()
 const authStore = useAuthStore()
 
+// 添加筛选状态
+const selectedGameType = ref('all')
+
+// 筛选选项
+const gameTypeOptions = [
+  { value: 'all', label: 'All Games' },
+  { value: 'grading', label: 'Grading' },
+  { value: 'tournament', label: 'Tournament' },
+  { value: 'regular', label: 'Regular' }
+]
+
 // 确保游戏数据加载
 onMounted(async () => {
   if (playerStore.players.length === 0) {
@@ -25,15 +36,57 @@ const playerId = computed(() => Number(route.params.id))
 const player = computed(() => playerStore.players.find(p => p.id === playerId.value))
 const playerStats = computed(() => {
   const stats = playerStore.getPlayerStats(playerId.value)
-  return stats.map(stat => {
+  let filteredStats = stats.map(stat => {
     const game = gameStore.games.find(g => g.id === stat.gameId)
     return {
       ...stat,
-      opponent: game?.team_stats?.opponent || '-'
+      opponent: game?.team_stats?.opponent || '-',
+      team_stats: game?.team_stats || {}
     }
   })
+
+  // 根据选中的比赛类型筛选
+  if (selectedGameType.value !== 'all') {
+    filteredStats = filteredStats.filter(stat => {
+      const gameType = stat.team_stats?.GT?.toLowerCase()
+      return gameType === selectedGameType.value
+    })
+  }
+
+  return filteredStats
 })
-const playerAverageStats = computed(() => playerStore.getPlayerAverageStats(playerId.value))
+const playerAverageStats = computed(() => {
+  // 使用筛选后的比赛数据计算平均值
+  const stats = playerStats.value
+  if (!stats || stats.length === 0) {
+    return {
+      MIN: 0, FGM: 0, FGA: 0, threePM: 0, threePA: 0,
+      FTM: 0, FTA: 0, OREB: 0, DREB: 0, AST: 0,
+      STL: 0, BLK: 0, TOV: 0, PF: 0, PTS: 0
+    }
+  }
+
+  const totals = stats.reduce((acc, stat) => {
+    Object.keys(stat).forEach(key => {
+      if (typeof stat[key] === 'number') {
+        acc[key] = (acc[key] || 0) + (Number(stat[key]) || 0)
+      }
+    })
+    // 计算总得分
+    acc.PTS = (acc.PTS || 0) + calculatePoints(stat)
+    return acc
+  }, {})
+
+  const averages = {}
+  const gamesCount = stats.length
+  Object.keys(totals).forEach(key => {
+    const value = totals[key] / gamesCount
+    // 确保所有数值保留两位小数
+    averages[key] = Number(value.toFixed(2))
+  })
+
+  return averages
+})
 
 // 编辑状态管理
 const isEditing = ref(false)
@@ -74,10 +127,18 @@ const cancelEdit = () => {
   editingNumber.value = ''
 }
 
-// 计算命中率
+// 计算命中率（用于表格显示，不带小数）
+const calculateTablePercentage = (made, attempted) => {
+  if (!attempted) return 'N/A'
+  const percentage = (made / attempted) * 100
+  return Math.round(percentage) + '%'
+}
+
+// 计算命中率（用于统计卡片显示，保留两位小数）
 const calculatePercentage = (made, attempted) => {
   if (!attempted) return 'N/A'
-  return ((made / attempted) * 100).toFixed(1) + '%'
+  const percentage = (made / attempted) * 100
+  return percentage.toFixed(1) === '0.0' ? '0.00' : percentage.toFixed(2) + '%'
 }
 
 // 计算得分
@@ -249,7 +310,14 @@ const deleteGameRecord = async (gameId) => {
         <!-- 比赛数据表格 -->
         <div class="overflow-hidden rounded-lg shadow-lg border p-4">
           <div class="flex justify-between items-center p-4 border-b">
-            <h2 class="text-xl font-bold">Game Records</h2>
+
+            <h2 class="text-xl font-bold">Game Records ({{ playerStats.length }} GP)</h2>
+            <select v-model="selectedGameType" class="select select-sm">
+              <option v-for="option in gameTypeOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+
           </div>
           <div class="overflow-x-auto">
             <table class="min-w-full table-md">
@@ -292,19 +360,19 @@ const deleteGameRecord = async (gameId) => {
                   <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">
                     {{ stat.FGM || 0 }}/{{ stat.FGA || 0 }}
                     <span class="text-gray-500 text-sm">
-                      ({{ calculatePercentage(stat.FGM, stat.FGA) }})
+                      ({{ calculateTablePercentage(stat.FGM, stat.FGA) }})
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">
                     {{ stat.threePM || 0 }}/{{ stat.threePA || 0 }}
                     <span class="text-gray-500 text-sm">
-                      ({{ calculatePercentage(stat.threePM, stat.threePA) }})
+                      ({{ calculateTablePercentage(stat.threePM, stat.threePA) }})
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">
                     {{ stat.FTM || 0 }}/{{ stat.FTA || 0 }}
                     <span class="text-gray-500 text-sm">
-                      ({{ calculatePercentage(stat.FTM, stat.FTA) }})
+                      ({{ calculateTablePercentage(stat.FTM, stat.FTA) }})
                     </span>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap cursor-pointer" @click="router.push(`/game/${stat.gameId}`)">

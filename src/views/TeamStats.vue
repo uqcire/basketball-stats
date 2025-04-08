@@ -150,7 +150,7 @@ const teamAverageStats = computed(() => {
   const totals = games.reduce((acc, game) => {
     Object.keys(game).forEach(key => {
       if (typeof game[key] === 'number') {
-        acc[key] = (acc[key] || 0) + game[key]
+        acc[key] = (acc[key] || 0) + (Number(game[key]) || 0)
       }
     })
     return acc
@@ -159,7 +159,9 @@ const teamAverageStats = computed(() => {
   const averages = {}
   Object.keys(totals).forEach(key => {
     if (key === 'id') return // 跳过id字段
-    averages[key] = totals[key] / totalGames
+    const value = totals[key] / totalGames
+    // 确保所有数值保留两位小数
+    averages[key] = Number(value.toFixed(2))
   })
 
   return averages
@@ -191,7 +193,8 @@ const cancelEdit = () => {
 // 计算命中率
 const calculatePercentage = (made, attempted) => {
   if (!attempted) return 'N/A'
-  return ((made / attempted) * 100).toFixed(1) + '%'
+  const percentage = (made / attempted) * 100
+  return percentage.toFixed(1) === '0.0' ? '0.00' : percentage.toFixed(2) + '%'
 }
 </script>
 
@@ -262,7 +265,7 @@ const calculatePercentage = (made, attempted) => {
           <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
             <div class="stat rounded-lg shadow-lg">
               <div class="stat-title">PTS</div>
-              <div class="stat-value">{{ teamAverageStats?.PTS?.toFixed(1) || '0.0' }}</div>
+              <div class="stat-value">{{ teamAverageStats?.PTS?.toFixed(2) || '0.00' }}</div>
             </div>
             <div class="stat rounded-lg shadow-lg">
               <div class="stat-title">FG%</div>
@@ -279,28 +282,28 @@ const calculatePercentage = (made, attempted) => {
             </div>
             <div class="stat rounded-lg shadow-lg">
               <div class="stat-title">REB</div>
-              <div class="stat-value">{{ ((teamAverageStats?.OREB || 0) + (teamAverageStats?.DREB || 0)).toFixed(1) }}
+              <div class="stat-value">{{ ((teamAverageStats?.OREB || 0) + (teamAverageStats?.DREB || 0)).toFixed(2) }}
               </div>
             </div>
             <div class="stat rounded-lg shadow-lg">
               <div class="stat-title">AST</div>
-              <div class="stat-value">{{ teamAverageStats?.AST?.toFixed(1) || '0.0' }}</div>
+              <div class="stat-value">{{ teamAverageStats?.AST?.toFixed(2) || '0.00' }}</div>
             </div>
             <div class="stat rounded-lg shadow-lg">
               <div class="stat-title">STL</div>
-              <div class="stat-value">{{ teamAverageStats?.STL?.toFixed(1) || '0.0' }}</div>
+              <div class="stat-value">{{ teamAverageStats?.STL?.toFixed(2) || '0.00' }}</div>
             </div>
             <div class="stat rounded-lg shadow-lg">
               <div class="stat-title">BLK</div>
-              <div class="stat-value">{{ teamAverageStats?.BLK?.toFixed(1) || '0.0' }}</div>
+              <div class="stat-value">{{ teamAverageStats?.BLK?.toFixed(2) || '0.00' }}</div>
             </div>
             <div class="stat rounded-lg shadow-lg">
               <div class="stat-title">TOV</div>
-              <div class="stat-value">{{ teamAverageStats?.TOV?.toFixed(1) || '0.0' }}</div>
+              <div class="stat-value">{{ teamAverageStats?.TOV?.toFixed(2) || '0.00' }}</div>
             </div>
             <div class="stat rounded-lg shadow-lg">
               <div class="stat-title">PF</div>
-              <div class="stat-value">{{ teamAverageStats?.PF?.toFixed(1) || '0.0' }}</div>
+              <div class="stat-value">{{ teamAverageStats?.PF?.toFixed(2) || '0.00' }}</div>
             </div>
           </div>
         </div>
