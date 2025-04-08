@@ -16,6 +16,17 @@ const router = useRouter()
 const editingGameId = ref(null)
 const editingGameName = ref('')
 
+// 添加筛选状态
+const selectedGameType = ref('all')
+
+// 筛选选项
+const gameTypeOptions = [
+  { value: 'all', label: 'All Games' },
+  { value: 'grading', label: 'Grading' },
+  { value: 'tournament', label: 'Tournament' },
+  { value: 'regular', label: 'Regular' }
+]
+
 // 添加新比赛
 const addNewGame = async () => {
   try {
@@ -47,7 +58,7 @@ onMounted(async () => {
 
 // 获取团队比赛数据
 const teamGameStats = computed(() => {
-  return gameStore.games.map(game => {
+  let games = gameStore.games.map(game => {
     // 解构响应式对象
     const rawGame = {
       id: game.id,
@@ -103,6 +114,16 @@ const teamGameStats = computed(() => {
       PTS: pts
     }
   })
+
+  // 根据选中的比赛类型筛选
+  if (selectedGameType.value !== 'all') {
+    games = games.filter(game => {
+      const gameType = game.GT.toLowerCase()
+      return gameType === selectedGameType.value
+    })
+  }
+
+  return games
 })
 
 // 获取团队平均数据
@@ -289,9 +310,16 @@ const calculatePercentage = (made, attempted) => {
         <div class="overflow-hidden border rounded-lg shadow-lg p-4">
           <div class="flex justify-between items-center p-4 border-b">
             <h2 class="text-xl font-bold">Game Statistics ({{ teamGameStats.length }} GP)</h2>
-            <button v-if="authStore.isAdmin" @click="addNewGame" class="btn btn-primary btn-sm">
-              Add New Game
-            </button>
+            <div class="flex gap-4">
+              <select v-model="selectedGameType" class="select select-sm">
+                <option v-for="option in gameTypeOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+              <button v-if="authStore.isAdmin" @click="addNewGame" class="btn btn-primary btn-sm">
+                Add New Game
+              </button>
+            </div>
           </div>
           <div class="overflow-hidden rounded-lg shadow-lg pt-4">
             <TeamStatsTable :stats="teamGameStats" :editing-game-id="editingGameId" :editing-game-name="editingGameName"
