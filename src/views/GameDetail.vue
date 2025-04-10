@@ -561,7 +561,7 @@ const removeVideo = async (id) => {
             <select v-else v-model="editingGameData.GT" class="select">
               <option value="-">Select Type</option>
               <option value="Tournament">Tournament</option>
-              <option value="Regular Season">Regular Season</option>
+              <option value="Regular">Regular Season</option>
               <option value="Grading">Grading</option>
             </select>
           </div>

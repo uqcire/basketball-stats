@@ -49,7 +49,7 @@ const playerStats = computed(() => {
   if (selectedGameType.value !== 'all') {
     filteredStats = filteredStats.filter(stat => {
       const gameType = stat.team_stats?.GT?.toLowerCase()
-      return gameType === selectedGameType.value
+      return gameType === selectedGameType.value || (gameType === 'regular season' && selectedGameType.value === 'regular')
     })
   }
 
